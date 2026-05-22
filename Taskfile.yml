@@ -41,6 +41,13 @@ tasks:
     cmds:
       - npm run dev
 
+  stop:
+    desc: Stop backend, frontend, and Postgres
+    cmds:
+      - lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+      - lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+      - docker compose down
+
   dev:
     desc: Start DB, backend, and frontend
     deps: [db]
