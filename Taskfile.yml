@@ -49,9 +49,10 @@ tasks:
       - docker compose down
 
   dev:
-    desc: Start DB, backend, and frontend in the background
+    desc: Start DB, run migrations, and start backend and frontend in the background
     deps: [db]
     cmds:
+      - task: migrate
       - cd backend && nohup ../.venv/bin/python run.py > ../backend.log 2>&1 &
       - cd frontend && nohup npm run dev > ../frontend.log 2>&1 &
       - echo "Backend log: backend.log | Frontend log: frontend.log"
