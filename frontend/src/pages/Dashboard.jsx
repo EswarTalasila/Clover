@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getBudgetSummary, createBudget, syncPlaidTransactions, getPlaidAccounts } from '../lib/api';
+import {
+  getBudgetSummary,
+  createBudget,
+  syncPlaidTransactions,
+  getPlaidAccounts,
+  getSpendingTrend,
+} from '../lib/api';
+import CategoryDonut from '../components/CategoryDonut';
+import MonthlyTrend from '../components/MonthlyTrend';
 
 function currentMonth() {
   return new Date().toISOString().slice(0, 7);
@@ -133,14 +141,16 @@ function BudgetRow({ item, month, onSaved }) {
 export default function Dashboard() {
   const month = currentMonth();
   const [summary, setSummary] = useState([]);
+  const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState(null);
 
   const load = useCallback(() => {
-    return getBudgetSummary(month)
-      .then(setSummary)
-      .catch((err) => setError(err.response?.data?.detail || err.message));
+    return Promise.all([
+      getBudgetSummary(month).then(setSummary),
+      getSpendingTrend(6).then(setTrend),
+    ]).catch((err) => setError(err.response?.data?.detail || err.message));
   }, [month]);
 
   useEffect(() => {
@@ -195,7 +205,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
         <Stat label="Budgeted" value={fmt(totalLimit)} />
         <Stat label="Spent" value={fmt(totalSpent)} />
         <Stat
@@ -204,6 +214,13 @@ export default function Dashboard() {
           accent={totalLimit > 0 && totalRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-zinc-900 dark:text-zinc-50'}
         />
       </div>
+
+      {!loading && summary.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-10">
+          <CategoryDonut items={summary} />
+          <MonthlyTrend points={trend} />
+        </div>
+      )}
 
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">By category</h2>

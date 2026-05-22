@@ -3,8 +3,9 @@ from datetime import date
 from decimal import Decimal
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, String
 from sqlalchemy.dialects.postgresql import insert
+from pydantic import BaseModel
 from app.database import get_db
 from app.middleware.auth import get_current_user
 from app.models import Budget, Transaction
@@ -93,3 +94,50 @@ async def budget_summary(
 
     items.sort(key=lambda x: (x.monthly_limit is None, -float(x.spent)))
     return items
+
+
+class TrendPoint(BaseModel):
+    month: str
+    spent: Decimal
+
+
+@router.get("/trend", response_model=list[TrendPoint])
+async def spending_trend(
+    months: int = 6,
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(get_current_user),
+):
+    today = date.today()
+    year = today.year
+    month = today.month - (months - 1)
+    while month <= 0:
+        month += 12
+        year -= 1
+    start = date(year, month, 1)
+
+    result = await db.execute(
+        select(
+            func.to_char(Transaction.date, "YYYY-MM").label("month"),
+            func.sum(Transaction.amount).label("spent"),
+        )
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.date >= start,
+            Transaction.amount > 0,
+            Transaction.category != "Income",
+        )
+        .group_by("month")
+        .order_by("month")
+    )
+    by_month = {row[0]: row[1] for row in result.all()}
+
+    points = []
+    y, m = start.year, start.month
+    for _ in range(months):
+        key = f"{y:04d}-{m:02d}"
+        points.append(TrendPoint(month=key, spent=by_month.get(key, Decimal("0"))))
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+    return points

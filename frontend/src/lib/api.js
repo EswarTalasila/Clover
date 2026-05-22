@@ -40,6 +40,10 @@ export function getBudgetSummary(month) {
   return api.get('/budgets/summary', { params: { month } }).then((r) => r.data);
 }
 
+export function getSpendingTrend(months = 6) {
+  return api.get('/budgets/trend', { params: { months } }).then((r) => r.data);
+}
+
 export function createBudget(data) {
   return api.post('/budgets', data).then((r) => r.data);
 }
