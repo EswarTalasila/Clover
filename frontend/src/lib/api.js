@@ -52,10 +52,20 @@ export function createPlaidLinkToken() {
   return api.post('/plaid/link-token').then((r) => r.data);
 }
 
-export function exchangePlaidToken(publicToken) {
-  return api.post('/plaid/exchange-token', { publicToken }).then((r) => r.data);
+export function exchangePlaidToken(publicToken, institutionName) {
+  return api
+    .post('/plaid/exchange-token', { public_token: publicToken, institution_name: institutionName })
+    .then((r) => r.data);
 }
 
-export function syncPlaidTransactions(accountId) {
-  return api.post('/plaid/sync', { accountId }).then((r) => r.data);
+export function syncPlaidTransactions() {
+  return api.post('/plaid/sync').then((r) => r.data);
+}
+
+export function getPlaidAccounts() {
+  return api.get('/plaid/accounts').then((r) => r.data);
+}
+
+export function deletePlaidAccount(id) {
+  return api.delete(`/plaid/accounts/${id}`);
 }

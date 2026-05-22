@@ -78,3 +78,17 @@ class PlaidLinkTokenResponse(BaseModel):
 class PlaidExchangeRequest(BaseModel):
     public_token: str
     institution_name: str | None = None
+
+
+class AccountOut(BaseModel):
+    id: uuid.UUID
+    institution_name: str | None
+    last_cursor: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class PlaidSyncResponse(BaseModel):
+    added: int
+    modified: int
+    removed: int

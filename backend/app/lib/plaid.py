@@ -44,7 +44,10 @@ async def exchange_public_token(public_token: str) -> tuple[str, str]:
 
 
 async def sync_transactions(access_token: str, cursor: str | None = None) -> dict:
-    request = TransactionsSyncRequest(access_token=access_token, cursor=cursor)
+    kwargs = {"access_token": access_token}
+    if cursor:
+        kwargs["cursor"] = cursor
+    request = TransactionsSyncRequest(**kwargs)
     response = client.transactions_sync(request)
     return {
         "added": [t.to_dict() for t in response["added"]],

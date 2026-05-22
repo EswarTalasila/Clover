@@ -6,6 +6,7 @@ function Icon({ name, className = 'w-[15px] h-[15px]' }) {
     dashboard: <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />,
     transactions: <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />,
     budgets: <path d="M3 3v18h18M7 14l4-4 4 4 5-5" />,
+    accounts: <path d="M3 10h18M5 6h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm10 8h2" />,
     logout: <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />,
   };
   const filled = name === 'dashboard';
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/transactions', label: 'Transactions', icon: 'transactions' },
   { to: '/budgets', label: 'Budgets', icon: 'budgets' },
+  { to: '/accounts', label: 'Accounts', icon: 'accounts' },
 ];
 
 export default function Layout({ children }) {
