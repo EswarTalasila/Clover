@@ -1,6 +1,15 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Layout({ children }) {
+  const { clearToken } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    clearToken();
+    navigate('/login');
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
@@ -8,32 +17,35 @@ export default function Layout({ children }) {
           <span className="text-lg font-semibold text-gray-900">Budget</span>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`
-            }
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/transactions"
-            className={({ isActive }) =>
-              `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`
-            }
-          >
-            Transactions
-          </NavLink>
+          {[
+            { to: '/', label: 'Dashboard', end: true },
+            { to: '/transactions', label: 'Transactions' },
+            { to: '/budgets', label: 'Budgets' },
+          ].map(({ to, label, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
         </nav>
+        <div className="px-3 py-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 overflow-auto">
