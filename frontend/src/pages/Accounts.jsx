@@ -46,12 +46,12 @@ export default function Accounts() {
 
   return (
     <div>
-      <div className="mb-8 pb-6 border-b border-slate-200 flex items-end justify-between gap-4">
+      <div className="mb-8 pb-6 border-b border-slate-200 dark:border-slate-800 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[12px] font-medium text-slate-500 uppercase tracking-[0.08em]">
+          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-[0.08em]">
             Connections
           </p>
-          <h1 className="mt-1.5 text-[28px] font-semibold text-slate-900 tracking-tight">
+          <h1 className="mt-1.5 text-[28px] font-semibold text-slate-900 dark:text-slate-50 tracking-tight">
             Accounts
           </h1>
         </div>
@@ -66,24 +66,24 @@ export default function Accounts() {
       </div>
 
       {message && (
-        <div className="mb-4 text-[13px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2">
+        <div className="mb-4 text-[13px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-3 py-2">
           {message}
         </div>
       )}
       {error && (
-        <div className="mb-4 text-[13px] text-red-700 bg-red-50 border border-red-200 px-3 py-2">
+        <div className="mb-4 text-[13px] text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 px-3 py-2">
           {error}
         </div>
       )}
 
       {loading ? (
-        <p className="text-[13px] text-slate-500">Loading…</p>
+        <p className="text-[13px] text-slate-500 dark:text-slate-400">Loading…</p>
       ) : (
         <div className="panel">
           {accounts.length === 0 ? (
             <div className="p-16 text-center">
-              <p className="text-[13px] text-slate-600">No banks connected yet.</p>
-              <p className="text-[12px] text-slate-400 mt-1">
+              <p className="text-[13px] text-slate-600 dark:text-slate-300">No banks connected yet.</p>
+              <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-1">
                 Connect a bank via Plaid to automatically sync transactions.
               </p>
             </div>
@@ -98,17 +98,17 @@ export default function Accounts() {
               </thead>
               <tbody>
                 {accounts.map((a) => (
-                  <tr key={a.id} className="group hover:bg-slate-50/60 transition-colors duration-100">
-                    <td className="text-slate-900 font-medium">
+                  <tr key={a.id} className="group hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors duration-100">
+                    <td className="text-slate-900 dark:text-slate-100 font-medium">
                       {a.institution_name || 'Unknown bank'}
                     </td>
-                    <td className="text-[12px] text-slate-500">
+                    <td className="text-[12px] text-slate-500 dark:text-slate-400">
                       {a.last_cursor ? 'Synced' : 'Awaiting first sync'}
                     </td>
                     <td className="text-right">
                       <button
                         onClick={() => handleDisconnect(a.id)}
-                        className="text-[12px] text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all duration-100"
+                        className="text-[12px] text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 hover:text-red-600 dark:hover:text-red-400 transition-all duration-100"
                       >
                         Disconnect
                       </button>

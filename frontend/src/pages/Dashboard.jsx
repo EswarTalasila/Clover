@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getBudgetSummary, createBudget } from '../lib/api';
+import { getBudgetSummary, createBudget, syncPlaidTransactions, getPlaidAccounts } from '../lib/api';
 
 function currentMonth() {
   return new Date().toISOString().slice(0, 7);
@@ -16,8 +16,10 @@ function fmtCents(n) {
 function Stat({ label, value, accent }) {
   return (
     <div className="panel p-5">
-      <p className="text-[11px] font-medium text-slate-500 uppercase tracking-[0.06em]">{label}</p>
-      <p className={`mt-3 text-[26px] font-semibold tracking-tight tabular-nums ${accent || 'text-slate-900'}`}>
+      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-[0.06em]">
+        {label}
+      </p>
+      <p className={`mt-3 text-[26px] font-semibold tracking-tight tabular-nums ${accent || 'text-slate-900 dark:text-slate-50'}`}>
         {value}
       </p>
     </div>
@@ -52,21 +54,19 @@ function BudgetRow({ item, month, onSaved }) {
   }
 
   return (
-    <div className="px-5 py-4 hover:bg-slate-50/50 transition-colors duration-100 group">
+    <div className="px-5 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors duration-100 group">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-[13px] font-medium text-slate-900">{item.category}</span>
-          <span className="text-[12px] text-slate-500 tabular-nums">
-            {limit !== null
-              ? `${fmtCents(spent)} / ${fmtCents(limit)}`
-              : `${fmtCents(spent)} spent`}
+          <span className="text-[13px] font-medium text-slate-900 dark:text-slate-100">{item.category}</span>
+          <span className="text-[12px] text-slate-500 dark:text-slate-400 tabular-nums">
+            {limit !== null ? `${fmtCents(spent)} / ${fmtCents(limit)}` : `${fmtCents(spent)} spent`}
           </span>
         </div>
         <div className="flex items-center gap-3">
           {limit !== null ? (
             <span
               className={`text-[12px] font-medium tabular-nums ${
-                over ? 'text-red-700' : 'text-slate-500'
+                over ? 'text-red-700 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'
               }`}
             >
               {over ? `${fmtCents(spent - limit)} over` : `${fmtCents(remaining)} left`}
@@ -83,39 +83,47 @@ function BudgetRow({ item, month, onSaved }) {
                   required
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  className="h-7 pl-5 pr-2 w-24 text-[12px] border border-slate-300 focus:border-slate-900 focus:ring-0"
+                  className="h-7 pl-5 pr-2 w-24 text-[12px] bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:border-accent-600 dark:focus:border-accent-500 focus:ring-0 text-slate-900 dark:text-slate-100"
                   placeholder="0.00"
                 />
               </div>
-              <button type="submit" disabled={saving} className="h-7 px-2 text-[12px] font-medium bg-slate-900 text-white border border-slate-900 hover:bg-slate-800">
+              <button
+                type="submit"
+                disabled={saving}
+                className="h-7 px-2 text-[12px] font-medium bg-accent-600 text-white border border-accent-600 hover:bg-accent-700"
+              >
                 {saving ? '…' : 'Save'}
               </button>
-              <button type="button" onClick={() => setEditing(false)} className="h-7 px-2 text-[12px] text-slate-500 hover:text-slate-900">
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="h-7 px-2 text-[12px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+              >
                 Cancel
               </button>
             </form>
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="text-[12px] text-slate-500 hover:text-slate-900 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+              className="text-[12px] text-slate-500 dark:text-slate-400 hover:text-accent-600 dark:hover:text-accent-400 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
             >
               + Set budget
             </button>
           )}
         </div>
       </div>
-      <div className="h-[3px] bg-slate-100 overflow-hidden">
+      <div className="h-[3px] bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <div
           className={`h-full transition-[width] duration-500 ease-out ${
             limit === null
-              ? 'bg-slate-300'
+              ? 'bg-slate-300 dark:bg-slate-700'
               : over
               ? 'bg-red-500'
               : pct > 80
               ? 'bg-amber-500'
-              : 'bg-slate-900'
+              : 'bg-accent-600'
           }`}
-          style={{ width: limit !== null ? `${pct}%` : '100%', opacity: limit === null ? 0.4 : 1 }}
+          style={{ width: limit !== null ? `${pct}%` : '100%', opacity: limit === null ? 0.5 : 1 }}
         />
       </div>
     </div>
@@ -126,17 +134,28 @@ export default function Dashboard() {
   const month = currentMonth();
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState(null);
 
   const load = useCallback(() => {
-    getBudgetSummary(month)
+    return getBudgetSummary(month)
       .then(setSummary)
-      .catch((err) => setError(err.response?.data?.detail || err.message))
-      .finally(() => setLoading(false));
+      .catch((err) => setError(err.response?.data?.detail || err.message));
   }, [month]);
 
   useEffect(() => {
-    load();
+    (async () => {
+      try {
+        const accounts = await getPlaidAccounts();
+        if (accounts.length > 0) {
+          setSyncing(true);
+          await syncPlaidTransactions().catch(() => {});
+          setSyncing(false);
+        }
+      } catch {}
+      await load();
+      setLoading(false);
+    })();
   }, [load]);
 
   const budgeted = summary.filter((s) => s.monthly_limit !== null);
@@ -152,19 +171,27 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="mb-8 pb-6 border-b border-slate-200">
-        <p className="text-[12px] font-medium text-slate-500 uppercase tracking-[0.08em]">
+      <div className="mb-8 pb-6 border-b border-slate-200 dark:border-slate-800">
+        <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-[0.08em]">
           Overview
         </p>
-        <div className="mt-1.5 flex items-baseline justify-between">
-          <h1 className="text-[28px] font-semibold text-slate-900 tracking-tight">
+        <div className="mt-1.5 flex items-baseline justify-between gap-4">
+          <h1 className="text-[28px] font-semibold text-slate-900 dark:text-slate-50 tracking-tight">
             {formattedMonth}
           </h1>
-          {totalLimit > 0 && (
-            <span className="text-[13px] text-slate-500 tabular-nums">
-              {overallPct.toFixed(0)}% of budget used
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {syncing && (
+              <span className="text-[12px] text-slate-500 dark:text-slate-400 inline-flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 bg-accent-500 animate-pulse" />
+                Syncing…
+              </span>
+            )}
+            {totalLimit > 0 && (
+              <span className="text-[13px] text-slate-500 dark:text-slate-400 tabular-nums">
+                {overallPct.toFixed(0)}% of budget used
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -174,20 +201,20 @@ export default function Dashboard() {
         <Stat
           label="Remaining"
           value={totalLimit > 0 ? fmt(totalRemaining) : '—'}
-          accent={totalLimit > 0 && totalRemaining < 0 ? 'text-red-700' : 'text-slate-900'}
+          accent={totalLimit > 0 && totalRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-50'}
         />
       </div>
 
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-[15px] font-semibold text-slate-900 tracking-tight">By category</h2>
-        <span className="text-[12px] text-slate-500">
+        <h2 className="text-[15px] font-semibold text-slate-900 dark:text-slate-100 tracking-tight">By category</h2>
+        <span className="text-[12px] text-slate-500 dark:text-slate-400">
           {summary.length} {summary.length === 1 ? 'category' : 'categories'}
         </span>
       </div>
 
-      {loading && <p className="text-[13px] text-slate-500">Loading…</p>}
+      {loading && <p className="text-[13px] text-slate-500 dark:text-slate-400">Loading…</p>}
       {error && (
-        <div className="text-[13px] text-red-700 bg-red-50 border border-red-200 px-3 py-2">
+        <div className="text-[13px] text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 px-3 py-2">
           {error}
         </div>
       )}
@@ -196,13 +223,13 @@ export default function Dashboard() {
         <div className="panel">
           {summary.length === 0 ? (
             <div className="p-12 text-center">
-              <p className="text-[13px] text-slate-600">No activity this month yet.</p>
-              <p className="text-[12px] text-slate-400 mt-1">
+              <p className="text-[13px] text-slate-600 dark:text-slate-300">No activity this month yet.</p>
+              <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-1">
                 Connect a bank or add a transaction to see spending here.
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {summary.map((item) => (
                 <BudgetRow key={item.category} item={item} month={month} onSaved={load} />
               ))}
