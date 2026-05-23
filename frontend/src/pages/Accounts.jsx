@@ -114,35 +114,39 @@ export default function Accounts() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
+            <div className="overflow-x-auto"><table className="table-base">
               <thead>
                 <tr>
                   <th>Institution</th>
-                  <th className="w-[160px]">Status</th>
-                  <th className="w-[100px]" />
+                  <th className="hidden sm:table-cell w-[160px]">Status</th>
+                  <th className="text-right w-[150px] sm:w-[140px]" />
                 </tr>
               </thead>
               <tbody>
                 {accounts.map((a) => (
                   <tr key={a.id} className="group hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition-colors duration-100">
-                    <td className="text-zinc-900 dark:text-zinc-100 font-medium">
-                      {a.institution_name || 'Unknown bank'}
+                    <td>
+                      <p className="text-zinc-900 dark:text-zinc-100 font-medium">
+                        {a.institution_name || 'Unknown bank'}
+                      </p>
+                      <p className="sm:hidden text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        {a.last_cursor ? 'Synced' : 'Awaiting first sync'}
+                      </p>
                     </td>
-                    <td className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                    <td className="hidden sm:table-cell text-[12px] text-zinc-500 dark:text-zinc-400">
                       {a.last_cursor ? 'Synced' : 'Awaiting first sync'}
                     </td>
                     <td className="text-right">
-                      <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+                      <div className="flex justify-end gap-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-100">
                         <button
                           onClick={() => setResetTarget(a)}
-                          className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-100"
-                          title="Clear sync cursor and re-pull all transactions"
+                          className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:opacity-70 transition-opacity duration-100"
                         >
                           Reset
                         </button>
                         <button
                           onClick={() => setDisconnectTarget(a)}
-                          className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-100"
+                          className="text-[12px] font-medium text-red-600 dark:text-red-400 hover:opacity-70 transition-opacity duration-100"
                         >
                           Disconnect
                         </button>

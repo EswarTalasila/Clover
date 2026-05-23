@@ -136,15 +136,15 @@ export default function Subscriptions() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
+              <div className="overflow-x-auto"><table className="table-base">
                 <thead>
                   <tr>
                     <th>Merchant</th>
-                    <th className="w-[140px]">Frequency</th>
-                    <th className="w-[120px]">Last charge</th>
-                    <th className="w-[120px]">Next predicted</th>
-                    <th className="text-right w-[110px]">Last amount</th>
-                    <th className="text-right w-[110px]">Monthly eq.</th>
+                    <th className="hidden sm:table-cell w-[140px]">Frequency</th>
+                    <th className="hidden md:table-cell w-[120px]">Last charge</th>
+                    <th className="hidden md:table-cell w-[120px]">Next predicted</th>
+                    <th className="hidden md:table-cell text-right w-[110px]">Last amount</th>
+                    <th className="text-right w-[100px] sm:w-[110px]">Monthly eq.</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -161,22 +161,26 @@ export default function Subscriptions() {
                             </span>
                             <StatusBadge status={s.status} isActive={s.is_active} />
                           </div>
-                          {s.institution_name && (
-                            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-                              {s.institution_name}
-                            </p>
-                          )}
+                          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                            <span className="sm:hidden">{prettyFrequency(s.frequency)}</span>
+                            {s.institution_name && (
+                              <>
+                                <span className="sm:hidden"> · </span>
+                                {s.institution_name}
+                              </>
+                            )}
+                          </p>
                         </td>
-                        <td className="text-zinc-700 dark:text-zinc-300 text-[12px]">
+                        <td className="hidden sm:table-cell text-zinc-700 dark:text-zinc-300 text-[12px]">
                           {prettyFrequency(s.frequency)}
                         </td>
-                        <td className="text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
+                        <td className="hidden md:table-cell text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
                           {fmtDate(s.last_date)}
                         </td>
-                        <td className="text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
+                        <td className="hidden md:table-cell text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
                           {fmtDate(s.predicted_next_date)}
                         </td>
-                        <td className="text-right text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">
+                        <td className="hidden md:table-cell text-right text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">
                           {fmt(last)}
                         </td>
                         <td className="text-right text-zinc-700 dark:text-zinc-300 tabular-nums">
@@ -201,14 +205,14 @@ export default function Subscriptions() {
                 </span>
               </div>
               <div className="panel">
-                <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
+                <div className="overflow-x-auto"><table className="table-base">
                   <thead>
                     <tr>
                       <th>Source</th>
-                      <th className="w-[140px]">Frequency</th>
-                      <th className="w-[120px]">Last received</th>
-                      <th className="w-[120px]">Next predicted</th>
-                      <th className="text-right w-[110px]">Last amount</th>
+                      <th className="hidden sm:table-cell w-[140px]">Frequency</th>
+                      <th className="hidden md:table-cell w-[120px]">Last received</th>
+                      <th className="hidden md:table-cell w-[120px]">Next predicted</th>
+                      <th className="text-right w-[100px] sm:w-[110px]">Last amount</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -216,16 +220,21 @@ export default function Subscriptions() {
                       const last = s.last_amount?.amount ?? s.last_amount;
                       return (
                         <tr key={s.stream_id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition-colors duration-100">
-                          <td className="font-medium text-zinc-900 dark:text-zinc-100">
-                            {s.merchant_name || s.description}
+                          <td>
+                            <p className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                              {s.merchant_name || s.description}
+                            </p>
+                            <p className="sm:hidden text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                              {prettyFrequency(s.frequency)}
+                            </p>
                           </td>
-                          <td className="text-zinc-700 dark:text-zinc-300 text-[12px]">
+                          <td className="hidden sm:table-cell text-zinc-700 dark:text-zinc-300 text-[12px]">
                             {prettyFrequency(s.frequency)}
                           </td>
-                          <td className="text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
+                          <td className="hidden md:table-cell text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
                             {fmtDate(s.last_date)}
                           </td>
-                          <td className="text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
+                          <td className="hidden md:table-cell text-zinc-500 dark:text-zinc-400 text-[12px] tabular-nums">
                             {fmtDate(s.predicted_next_date)}
                           </td>
                           <td className="text-right text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums">

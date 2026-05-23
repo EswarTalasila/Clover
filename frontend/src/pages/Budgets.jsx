@@ -113,7 +113,7 @@ function BudgetRow({ budget, onSaved, onDeleted }) {
       </td>
       <td className="text-right w-[130px]">
         {!editing && (
-          <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+          <div className="flex justify-end gap-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-100">
             <button
               onClick={() => setEditing(true)}
               className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:opacity-70 transition-opacity duration-100"

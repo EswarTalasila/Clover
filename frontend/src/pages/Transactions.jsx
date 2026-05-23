@@ -470,14 +470,14 @@ export default function Transactions() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
+            <div className="overflow-x-auto"><table className="table-base">
               <thead>
                 <tr>
-                  <SortHeader label="Date" sortKey="date" current={sortKey} dir={sortDir} onClick={toggleSort} className="w-[90px]" />
+                  <SortHeader label="Date" sortKey="date" current={sortKey} dir={sortDir} onClick={toggleSort} className="w-[70px] sm:w-[90px]" />
                   <SortHeader label="Description" sortKey="description" current={sortKey} dir={sortDir} onClick={toggleSort} />
-                  <SortHeader label="Category" sortKey="category" current={sortKey} dir={sortDir} onClick={toggleSort} className="w-[180px]" />
-                  <SortHeader label="Amount" sortKey="amount" current={sortKey} dir={sortDir} onClick={toggleSort} className="text-right w-[120px]" align="right" />
-                  <th className="w-[60px]" />
+                  <SortHeader label="Category" sortKey="category" current={sortKey} dir={sortDir} onClick={toggleSort} className="hidden md:table-cell w-[180px]" />
+                  <SortHeader label="Amount" sortKey="amount" current={sortKey} dir={sortDir} onClick={toggleSort} className="text-right w-[100px] sm:w-[120px]" align="right" />
+                  <th className="hidden md:table-cell w-[60px]" />
                 </tr>
               </thead>
               <tbody>
@@ -528,16 +528,22 @@ export default function Transactions() {
                                   </span>
                                 )}
                               </div>
-                              {source && (
-                                <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">
-                                  {source}
-                                  {t.location_city && ` · ${t.location_city}`}
-                                </p>
-                              )}
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="md:hidden">
+                                  <CategoryTag category={t.category} />
+                                </span>
+                                {source && (
+                                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">
+                                    <span className="md:hidden">· </span>
+                                    {source}
+                                    {t.location_city && ` · ${t.location_city}`}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td className="hidden md:table-cell">
                           <CategoryTag category={t.category} />
                         </td>
                         <td
@@ -548,7 +554,7 @@ export default function Transactions() {
                           {t.amount < 0 ? '+' : '−'}
                           {fmt(t.amount)}
                         </td>
-                        <td className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <td className="hidden md:table-cell text-right" onClick={(e) => e.stopPropagation()}>
                           {t.is_manual ? (
                             <button
                               onClick={() => handleDelete(t.id)}
