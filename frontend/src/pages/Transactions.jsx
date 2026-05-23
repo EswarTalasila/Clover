@@ -1,4 +1,5 @@
-import { useState, useMemo, Fragment } from 'react';
+import { useState, useMemo, Fragment, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTransactions } from '../hooks/useTransactions';
 import {
   createTransaction,
@@ -247,8 +248,24 @@ function ExpandedRow({ tx, onSaveNotes, onToggleExclude }) {
 }
 
 export default function Transactions() {
-  const [month, setMonth] = useState(currentMonth());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [month, setMonth] = useState(searchParams.get('month') || currentMonth());
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || null);
   const { transactions, loading, error, refetch } = useTransactions(month);
+
+  useEffect(() => {
+    const paramMonth = searchParams.get('month');
+    const paramCategory = searchParams.get('category');
+    if (paramMonth && paramMonth !== month) setMonth(paramMonth);
+    setCategoryFilter(paramCategory || null);
+  }, [searchParams]);
+
+  function clearCategoryFilter() {
+    setCategoryFilter(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete('category');
+    setSearchParams(next, { replace: true });
+  }
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -288,7 +305,9 @@ export default function Transactions() {
   }
 
   const sorted = useMemo(() => {
-    const copy = [...transactions];
+    const copy = categoryFilter
+      ? transactions.filter((t) => t.category === categoryFilter)
+      : [...transactions];
     copy.sort((a, b) => {
       let av, bv;
       if (sortKey === 'date') {
@@ -309,7 +328,7 @@ export default function Transactions() {
       return 0;
     });
     return copy;
-  }, [transactions, sortKey, sortDir]);
+  }, [transactions, sortKey, sortDir, categoryFilter]);
 
   function toggleSort(key) {
     if (sortKey === key) {
@@ -386,6 +405,22 @@ export default function Transactions() {
           </button>
         </div>
       </div>
+
+      {categoryFilter && (
+        <div className="mb-4 flex items-center gap-2 text-[13px]">
+          <span className="text-zinc-500 dark:text-zinc-400">Filtered by category:</span>
+          <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium">
+            {categoryFilter}
+            <button
+              onClick={clearCategoryFilter}
+              className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-100 -mr-0.5"
+              aria-label="Clear category filter"
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
 
       {recategorizeMsg && (
         <div className="mb-4 text-[13px] text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 px-3 py-2">

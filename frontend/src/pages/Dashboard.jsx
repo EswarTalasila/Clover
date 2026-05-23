@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   getBudgetSummary,
   createBudget,
@@ -39,6 +40,7 @@ function BudgetRow({ item, month, onSaved }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(item.monthly_limit ?? '');
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   const limit = item.monthly_limit !== null ? Number(item.monthly_limit) : null;
   const spent = Number(item.spent);
@@ -62,11 +64,19 @@ function BudgetRow({ item, month, onSaved }) {
     }
   }
 
+  function goToTransactions() {
+    if (editing) return;
+    navigate(`/transactions?month=${month}&category=${encodeURIComponent(item.category)}`);
+  }
+
   return (
-    <div className="px-5 py-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors duration-100 group">
+    <div
+      onClick={goToTransactions}
+      className="px-5 py-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors duration-100 group cursor-pointer"
+    >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100">{item.category}</span>
+          <span className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 group-hover:underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700">{item.category}</span>
           <span className="text-[12px] text-zinc-500 dark:text-zinc-400 tabular-nums">
             {limit !== null ? `${fmtCents(spent)} / ${fmtCents(limit)}` : `${fmtCents(spent)} spent`}
           </span>
@@ -81,7 +91,7 @@ function BudgetRow({ item, month, onSaved }) {
               {over ? `${fmtCents(spent - limit)} over` : `${fmtCents(remaining)} left`}
             </span>
           ) : editing ? (
-            <form onSubmit={handleSave} className="flex items-center gap-1.5">
+            <form onSubmit={handleSave} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5">
               <div className="relative">
                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 text-[12px]">$</span>
                 <input
@@ -113,8 +123,11 @@ function BudgetRow({ item, month, onSaved }) {
             </form>
           ) : (
             <button
-              onClick={() => setEditing(true)}
-              className="text-[12px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditing(true);
+              }}
+              className="text-[12px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-100"
             >
               + Set budget
             </button>

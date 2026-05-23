@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 
@@ -9,9 +10,12 @@ function fmtFull(n) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n));
 }
 
-function monthLabel(ym) {
+function monthLabel(ym, long = false) {
   const [y, m] = ym.split('-').map(Number);
-  return new Date(y, m - 1, 1).toLocaleString('default', { month: 'short' });
+  return new Date(y, m - 1, 1).toLocaleString('default', {
+    month: long ? 'long' : 'short',
+    year: long ? 'numeric' : undefined,
+  });
 }
 
 function CustomTooltip({ active, payload }) {
@@ -27,6 +31,7 @@ function CustomTooltip({ active, payload }) {
 
 export default function MonthlyTrend({ points }) {
   const { theme } = useTheme();
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const currentMonth = new Date().toISOString().slice(0, 7);
 
   const data = points.map((p) => {
@@ -44,25 +49,43 @@ export default function MonthlyTrend({ points }) {
   const maxSpent = Math.max(...data.map((d) => d.spent), 1);
   const avg = data.reduce((s, d) => s + d.spent, 0) / Math.max(data.length, 1);
 
-  const barColor = theme === 'dark' ? '#3f3f46' : '#e4e4e7';
-  const barColorActive = theme === 'dark' ? '#f4f4f5' : '#18181b';
+  const baseBarColor = theme === 'dark' ? '#3f3f46' : '#e4e4e7';
+  const activeBarColor = theme === 'dark' ? '#f4f4f5' : '#18181b';
+  const dimmedBarColor = theme === 'dark' ? '#27272a' : '#f4f4f5';
   const axisColor = theme === 'dark' ? '#71717a' : '#a1a1aa';
+
+  function colorFor(d) {
+    if (selectedMonth) {
+      return d.month === selectedMonth ? activeBarColor : dimmedBarColor;
+    }
+    return d.isCurrent ? activeBarColor : baseBarColor;
+  }
+
+  const selected = selectedMonth ? data.find((d) => d.month === selectedMonth) : null;
+  const headerLabel = selected ? selected.fullLabel : `Last ${data.length} months`;
+  const headerSubLabel = selected ? 'Selected' : 'Avg / mo';
+  const headerValue = selected ? selected.spent : avg;
+
+  function handleBarClick(payload) {
+    if (!payload?.month) return;
+    setSelectedMonth((m) => (m === payload.month ? null : payload.month));
+  }
 
   return (
     <div className="panel p-5 h-full flex flex-col">
-      <div className="mb-3 flex items-baseline justify-between">
-        <div>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.06em]">
-            Last {data.length} months
+            {selected ? 'Selected month' : `Last ${data.length} months`}
           </p>
-          <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mt-0.5">
-            Spending trend
+          <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mt-0.5 truncate">
+            {selected ? headerLabel : 'Spending trend'}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.06em]">Avg / mo</p>
+        <div className="text-right flex-shrink-0">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.06em]">{headerSubLabel}</p>
           <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight tabular-nums mt-0.5">
-            {fmt(avg)}
+            {fmt(headerValue)}
           </p>
         </div>
       </div>
@@ -86,14 +109,23 @@ export default function MonthlyTrend({ points }) {
               domain={[0, Math.ceil(maxSpent * 1.1)]}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-            <Bar dataKey="spent" radius={[2, 2, 0, 0]}>
+            <Bar dataKey="spent" radius={[2, 2, 0, 0]} onClick={(data) => handleBarClick(data?.payload)} style={{ cursor: 'pointer' }}>
               {data.map((d) => (
-                <Cell key={d.month} fill={d.isCurrent ? barColorActive : barColor} />
+                <Cell key={d.month} fill={colorFor(d)} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {selected && (
+        <button
+          onClick={() => setSelectedMonth(null)}
+          className="mt-2 self-start text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-100"
+        >
+          Clear selection
+        </button>
+      )}
     </div>
   );
 }
