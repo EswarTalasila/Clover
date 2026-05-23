@@ -115,12 +115,16 @@ export default function Layout({ children }) {
     <div className="flex h-screen bg-white dark:bg-zinc-950">
       <aside className="w-[220px] bg-zinc-50/60 dark:bg-zinc-900/40 border-r border-zinc-200 dark:border-zinc-800 flex flex-col">
         <div className="h-14 px-5 flex items-center border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
+          <NavLink
+            to="/"
+            end
+            className="flex items-center gap-2 hover:opacity-70 transition-opacity duration-100"
+          >
             <Logo className="w-[22px] h-[22px]" />
             <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
               Clover
             </span>
-          </div>
+          </NavLink>
         </div>
 
         <nav className="flex-1 px-2 py-3 space-y-0.5">
