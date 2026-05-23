@@ -99,14 +99,22 @@ function BudgetRow({ budget, onSaved, onDeleted }) {
           </button>
         )}
       </td>
-      <td className="text-right w-[80px]">
+      <td className="text-right w-[130px]">
         {!editing && (
-          <button
-            onClick={handleDelete}
-            className="text-[12px] text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-red-600 dark:hover:text-red-400 transition-all duration-100"
-          >
-            Delete
-          </button>
+          <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+            <button
+              onClick={() => setEditing(true)}
+              className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-100"
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-100"
+            >
+              Delete
+            </button>
+          </div>
         )}
       </td>
     </tr>
@@ -260,7 +268,7 @@ export default function Budgets() {
                   <tr>
                     <th>Category</th>
                     <th className="text-right">Monthly limit</th>
-                    <th className="w-[80px]" />
+                    <th className="w-[130px]" />
                   </tr>
                 </thead>
                 <tbody>
