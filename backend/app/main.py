@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import auth, transactions, budgets, plaid
 
-app = FastAPI(title="Clove API")
+app = FastAPI(title="Clover API")
 
 app.add_middleware(
     CORSMiddleware,

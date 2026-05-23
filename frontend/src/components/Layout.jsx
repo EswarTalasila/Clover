@@ -111,7 +111,7 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-2">
             <Logo className="w-[22px] h-[22px]" />
             <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-              Clove
+              Clover
             </span>
           </div>
         </div>

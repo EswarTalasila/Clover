@@ -35,7 +35,7 @@ export default function Login() {
         <div className="flex flex-col items-center mb-10">
           <Logo className="w-10 h-10 mb-5" />
           <h1 className="text-[22px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-            {mode === 'login' ? 'Sign in to Clove' : 'Create your Clove account'}
+            {mode === 'login' ? 'Sign in to Clover' : 'Create your Clover account'}
           </h1>
           <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mt-1.5">
             {mode === 'login' ? 'Enter your email to continue.' : 'Start tracking your finances.'}

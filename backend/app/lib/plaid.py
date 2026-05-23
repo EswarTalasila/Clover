@@ -30,7 +30,7 @@ client = plaid_api.PlaidApi(api_client)
 async def create_link_token(user_id: str) -> str:
     request = LinkTokenCreateRequest(
         products=[Products("transactions")],
-        client_name="Clove",
+        client_name="Clover",
         country_codes=[CountryCode("US")],
         language="en",
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
