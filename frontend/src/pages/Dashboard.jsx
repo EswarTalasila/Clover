@@ -153,7 +153,8 @@ function BudgetRow({ item, month, onSaved }) {
 }
 
 export default function Dashboard() {
-  const month = currentMonth();
+  const todayMonth = currentMonth();
+  const [selectedMonth, setSelectedMonth] = useState(todayMonth);
   const [summary, setSummary] = useState([]);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -161,13 +162,26 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
 
-  const load = useCallback(() => {
-    return Promise.all([
-      getBudgetSummary(month).then(setSummary),
-      getSpendingTrend(6).then(setTrend),
-    ]).catch((err) => setError(err.response?.data?.detail || err.message));
-  }, [month]);
+  const loadTrend = useCallback(() => {
+    return getSpendingTrend(6)
+      .then(setTrend)
+      .catch((err) => setError(err.response?.data?.detail || err.message));
+  }, []);
 
+  const loadSummary = useCallback(
+    (monthToLoad) => {
+      return getBudgetSummary(monthToLoad)
+        .then(setSummary)
+        .catch((err) => setError(err.response?.data?.detail || err.message));
+    },
+    []
+  );
+
+  const load = useCallback(() => {
+    return Promise.all([loadSummary(selectedMonth), loadTrend()]);
+  }, [loadSummary, loadTrend, selectedMonth]);
+
+  // First-mount only: sync Plaid + load initial data
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -189,16 +203,24 @@ export default function Dashboard() {
           if (!cancelled) setSyncing(false);
         }
       } catch {
-        /* getPlaidAccounts can fail if user has no accounts yet; load() will still run */
+        /* user may have no accounts yet */
       }
       if (cancelled) return;
-      await load();
+      await Promise.all([loadSummary(selectedMonth), loadTrend()]);
       if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [load]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Refetch summary when selectedMonth changes (skip initial mount; handled above)
+  useEffect(() => {
+    if (loading) return;
+    loadSummary(selectedMonth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMonth]);
 
   const budgeted = summary.filter((s) => s.monthly_limit !== null);
   const totalLimit = budgeted.reduce((acc, s) => acc + Number(s.monthly_limit), 0);
@@ -206,17 +228,28 @@ export default function Dashboard() {
   const totalRemaining = totalLimit - totalSpent;
   const overallPct = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
 
-  const formattedMonth = new Date(`${month}-01T00:00:00`).toLocaleString('default', {
+  const formattedMonth = new Date(`${selectedMonth}-01T00:00:00`).toLocaleString('default', {
     month: 'long',
     year: 'numeric',
   });
+  const viewingPast = selectedMonth !== todayMonth;
 
   return (
     <div>
       <div className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800">
-        <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">
-          Overview
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">
+            {viewingPast ? 'Viewing past month' : 'Overview'}
+          </p>
+          {viewingPast && (
+            <button
+              onClick={() => setSelectedMonth(todayMonth)}
+              className="text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-2 transition-colors duration-100"
+            >
+              Back to current
+            </button>
+          )}
+        </div>
         <div className="mt-1.5 flex items-baseline justify-between gap-4">
           <h1 className="text-[28px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
             {formattedMonth}
@@ -250,7 +283,12 @@ export default function Dashboard() {
       {!loading && summary.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-10">
           <CategoryDonut items={summary} />
-          <MonthlyTrend points={trend} />
+          <MonthlyTrend
+            points={trend}
+            selectedMonth={selectedMonth}
+            currentMonth={todayMonth}
+            onSelectMonth={setSelectedMonth}
+          />
         </div>
       )}
 
@@ -280,7 +318,7 @@ export default function Dashboard() {
           ) : (
             <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
               {summary.map((item) => (
-                <BudgetRow key={item.category} item={item} month={month} onSaved={load} />
+                <BudgetRow key={item.category} item={item} month={selectedMonth} onSaved={load} />
               ))}
             </div>
           )}

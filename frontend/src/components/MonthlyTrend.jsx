@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 
@@ -29,10 +28,8 @@ function CustomTooltip({ active, payload }) {
   );
 }
 
-export default function MonthlyTrend({ points }) {
+export default function MonthlyTrend({ points, selectedMonth, currentMonth, onSelectMonth }) {
   const { theme } = useTheme();
-  const [selectedMonth, setSelectedMonth] = useState(null);
-  const currentMonth = new Date().toISOString().slice(0, 7);
 
   const data = points.map((p) => {
     const [y, m] = p.month.split('-').map(Number);
@@ -54,21 +51,24 @@ export default function MonthlyTrend({ points }) {
   const dimmedBarColor = theme === 'dark' ? '#27272a' : '#f4f4f5';
   const axisColor = theme === 'dark' ? '#71717a' : '#a1a1aa';
 
+  const hasNonCurrentSelection = selectedMonth && selectedMonth !== currentMonth;
+
   function colorFor(d) {
-    if (selectedMonth) {
+    if (hasNonCurrentSelection) {
       return d.month === selectedMonth ? activeBarColor : dimmedBarColor;
     }
     return d.isCurrent ? activeBarColor : baseBarColor;
   }
 
-  const selected = selectedMonth ? data.find((d) => d.month === selectedMonth) : null;
-  const headerLabel = selected ? selected.fullLabel : `Last ${data.length} months`;
-  const headerSubLabel = selected ? 'Selected' : 'Avg / mo';
-  const headerValue = selected ? selected.spent : avg;
+  const selected = hasNonCurrentSelection ? data.find((d) => d.month === selectedMonth) : null;
 
   function handleBarClick(payload) {
     if (!payload?.month) return;
-    setSelectedMonth((m) => (m === payload.month ? null : payload.month));
+    if (payload.month === selectedMonth) {
+      onSelectMonth(currentMonth);
+    } else {
+      onSelectMonth(payload.month);
+    }
   }
 
   return (
@@ -76,16 +76,18 @@ export default function MonthlyTrend({ points }) {
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.06em]">
-            {selected ? 'Selected month' : `Last ${data.length} months`}
+            {selected ? 'Viewing' : `Last ${data.length} months`}
           </p>
           <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mt-0.5 truncate">
-            {selected ? headerLabel : 'Spending trend'}
+            {selected ? selected.fullLabel : 'Spending trend'}
           </p>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.06em]">{headerSubLabel}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.06em]">
+            {selected ? 'Spent' : 'Avg / mo'}
+          </p>
           <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight tabular-nums mt-0.5">
-            {fmt(headerValue)}
+            {fmt(selected ? selected.spent : avg)}
           </p>
         </div>
       </div>
@@ -109,7 +111,7 @@ export default function MonthlyTrend({ points }) {
               domain={[0, Math.ceil(maxSpent * 1.1)]}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-            <Bar dataKey="spent" radius={[2, 2, 0, 0]} onClick={(data) => handleBarClick(data?.payload)} style={{ cursor: 'pointer' }}>
+            <Bar dataKey="spent" radius={[2, 2, 0, 0]} onClick={(d) => handleBarClick(d?.payload)} style={{ cursor: 'pointer' }}>
               {data.map((d) => (
                 <Cell key={d.month} fill={colorFor(d)} />
               ))}
@@ -120,10 +122,10 @@ export default function MonthlyTrend({ points }) {
 
       {selected && (
         <button
-          onClick={() => setSelectedMonth(null)}
+          onClick={() => onSelectMonth(currentMonth)}
           className="mt-2 self-start text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-100"
         >
-          Clear selection
+          Back to current month
         </button>
       )}
     </div>
