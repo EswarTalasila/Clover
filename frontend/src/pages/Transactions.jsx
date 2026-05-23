@@ -357,7 +357,7 @@ export default function Transactions() {
 
   return (
     <div>
-      <div className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800 flex items-end justify-between gap-4">
+      <div className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">
             Activity
@@ -470,7 +470,7 @@ export default function Transactions() {
               </p>
             </div>
           ) : (
-            <table className="table-base">
+            <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
               <thead>
                 <tr>
                   <SortHeader label="Date" sortKey="date" current={sortKey} dir={sortDir} onClick={toggleSort} className="w-[90px]" />
@@ -577,7 +577,7 @@ export default function Transactions() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       )}

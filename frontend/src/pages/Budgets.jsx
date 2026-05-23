@@ -262,7 +262,7 @@ export default function Budgets() {
 
   return (
     <div>
-      <div className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800 flex items-end justify-between gap-4">
+      <div className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">
             Planning

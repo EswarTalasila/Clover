@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
@@ -17,6 +17,8 @@ function Icon({ name, className = 'w-[15px] h-[15px]' }) {
       <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     ),
     chevron: <path d="M8 9l4-4 4 4m0 6l-4 4-4-4" />,
+    menu: <path d="M4 6h16M4 12h16M4 18h16" />,
+    close: <path d="M6 18L18 6M6 6l12 12" />,
   };
   const filled = name === 'dashboard';
   return (
@@ -73,14 +75,14 @@ function UserMenu() {
         <div className="w-6 h-6 bg-emerald-700 dark:bg-emerald-500 text-white flex items-center justify-center text-[11px] font-semibold flex-shrink-0">
           {initial}
         </div>
-        <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-200 truncate max-w-[180px]">
+        <span className="hidden sm:inline text-[12px] font-medium text-zinc-700 dark:text-zinc-200 truncate max-w-[180px]">
           {displayEmail}
         </span>
         <Icon name="chevron" className="w-3 h-3 text-zinc-400" />
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-1.5 w-[200px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg dark:shadow-black/40 py-1 fade-in">
+        <div className="absolute top-full right-0 mt-1.5 w-[220px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg dark:shadow-black/40 py-1 fade-in">
           <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Signed in as</p>
             <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
@@ -100,66 +102,105 @@ function UserMenu() {
   );
 }
 
-export default function Layout({ children }) {
+function Sidebar({ onNavigate }) {
   return (
-    <div className="flex h-screen bg-white dark:bg-zinc-950">
-      <aside className="w-[220px] bg-zinc-50/60 dark:bg-zinc-900/40 border-r border-zinc-200 dark:border-zinc-800 flex flex-col">
-        <div className="h-14 px-5 flex items-center border-b border-zinc-200 dark:border-zinc-800">
-          <NavLink
-            to="/"
-            end
-            className="flex items-center gap-2 hover:opacity-70 transition-opacity duration-100"
-          >
-            <Logo className="w-[22px] h-[22px]" />
-            <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-              Clover
-            </span>
-          </NavLink>
-        </div>
+    <>
+      <div className="h-14 px-5 flex items-center border-b border-zinc-200 dark:border-zinc-800 justify-between">
+        <NavLink
+          to="/"
+          end
+          onClick={onNavigate}
+          className="flex items-center gap-2 hover:opacity-70 transition-opacity duration-100"
+        >
+          <Logo className="w-[22px] h-[22px]" />
+          <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+            Clover
+          </span>
+        </NavLink>
+      </div>
 
-        <nav className="flex-1 px-2 py-3 space-y-0.5">
-          {navItems.map(({ to, label, icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 px-2.5 h-8 text-[13px] font-medium transition-colors duration-100 ${
-                  isActive
-                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
-                }`
-              }
-            >
-              <Icon name={icon} />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="px-2 py-3 border-t border-zinc-200 dark:border-zinc-800">
+      <nav className="flex-1 px-2 py-3 space-y-0.5">
+        {navItems.map(({ to, label, icon, end }) => (
           <NavLink
-            to="/settings"
+            key={to}
+            to={to}
+            end={end}
+            onClick={onNavigate}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-2.5 h-8 text-[13px] font-medium transition-colors duration-100 ${
+              `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium transition-colors duration-100 ${
                 isActive
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
               }`
             }
           >
-            <Icon name="settings" />
-            <span>Settings</span>
+            <Icon name={icon} />
+            <span>{label}</span>
           </NavLink>
-        </div>
+        ))}
+      </nav>
+
+      <div className="px-2 py-3 border-t border-zinc-200 dark:border-zinc-800">
+        <NavLink
+          to="/settings"
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium transition-colors duration-100 ${
+              isActive
+                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
+            }`
+          }
+        >
+          <Icon name="settings" />
+          <span>Settings</span>
+        </NavLink>
+      </div>
+    </>
+  );
+}
+
+export default function Layout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Auto-close drawer on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  return (
+    <div className="flex h-screen bg-white dark:bg-zinc-950 overflow-hidden">
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-[260px] md:relative md:w-[220px] bg-zinc-50/95 dark:bg-zinc-950/95 md:bg-zinc-50/60 md:dark:bg-zinc-900/40 backdrop-blur md:backdrop-blur-none border-r border-zinc-200 dark:border-zinc-800 flex flex-col transition-transform duration-200 ease-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <Sidebar onNavigate={() => setSidebarOpen(false)} />
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-14 px-8 flex items-center justify-end border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <header className="h-14 px-4 md:px-8 flex items-center justify-between md:justify-end border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden inline-flex items-center justify-center w-9 h-9 -ml-1.5 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
+            aria-label="Open menu"
+          >
+            <Icon name="menu" className="w-5 h-5" />
+          </button>
           <UserMenu />
         </header>
         <div className="flex-1 overflow-auto">
-          <div className="max-w-[1100px] mx-auto px-10 py-10 fade-in">{children}</div>
+          <div className="max-w-[1100px] mx-auto px-4 md:px-10 py-6 md:py-10 fade-in">
+            {children}
+          </div>
         </div>
       </main>
     </div>

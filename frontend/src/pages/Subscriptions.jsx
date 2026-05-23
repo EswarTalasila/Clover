@@ -87,7 +87,7 @@ export default function Subscriptions() {
         <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">
           Recurring
         </p>
-        <div className="mt-1.5 flex items-baseline justify-between gap-4">
+        <div className="mt-1.5 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <h1 className="text-[28px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
             Subscriptions
           </h1>
@@ -136,7 +136,7 @@ export default function Subscriptions() {
                 </p>
               </div>
             ) : (
-              <table className="table-base">
+              <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
                 <thead>
                   <tr>
                     <th>Merchant</th>
@@ -186,7 +186,7 @@ export default function Subscriptions() {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
 
@@ -201,7 +201,7 @@ export default function Subscriptions() {
                 </span>
               </div>
               <div className="panel">
-                <table className="table-base">
+                <div className="overflow-x-auto"><table className="table-base min-w-[640px]">
                   <thead>
                     <tr>
                       <th>Source</th>
@@ -235,7 +235,7 @@ export default function Subscriptions() {
                       );
                     })}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </>
           )}
