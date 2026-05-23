@@ -88,16 +88,6 @@ function UserMenu() {
             </p>
           </div>
           <button
-            onClick={() => {
-              setOpen(false);
-              navigate('/settings');
-            }}
-            className="w-full flex items-center gap-2.5 px-3 h-8 text-[13px] text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors duration-100"
-          >
-            <Icon name="settings" className="w-[14px] h-[14px]" />
-            Settings
-          </button>
-          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-3 h-8 text-[13px] text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors duration-100"
           >
