@@ -9,6 +9,7 @@ import {
   setTransactionExcluded,
 } from '../lib/api';
 import Toast from '../components/Toast';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 function currentMonth() {
   return new Date().toISOString().slice(0, 7);
@@ -114,9 +115,10 @@ function fmtLongDate(iso) {
   });
 }
 
-function ExpandedRow({ tx, onSaveNotes, onToggleExclude }) {
+function ExpandedRow({ tx, onSaveNotes, onToggleExclude, onDelete }) {
   const [notes, setNotes] = useState(tx.notes || '');
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   async function handleSave() {
     if (notes === (tx.notes || '')) return;
@@ -238,10 +240,42 @@ function ExpandedRow({ tx, onSaveNotes, onToggleExclude }) {
             </div>
           )}
 
+          {tx.is_manual && (
+            <div className="mt-5 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div>
+                <p className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100">
+                  Delete this transaction
+                </p>
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                  Manual entries can be removed permanently.
+                </p>
+              </div>
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 text-[13px] font-medium border border-red-300 dark:border-red-900 bg-white dark:bg-zinc-900 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-100"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+
           <p className="mt-4 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono">
             ID: {tx.id}
           </p>
         </div>
+
+        <ConfirmDialog
+          open={confirmingDelete}
+          title="Delete this transaction?"
+          description="This manual transaction will be permanently removed. This cannot be undone."
+          confirmText="Delete"
+          variant="danger"
+          onConfirm={async () => {
+            await onDelete(tx.id);
+            setConfirmingDelete(false);
+          }}
+          onCancel={() => setConfirmingDelete(false)}
+        />
       </td>
     </tr>
   );
@@ -612,6 +646,7 @@ export default function Transactions() {
                           tx={t}
                           onSaveNotes={handleSaveNotes}
                           onToggleExclude={handleToggleExclude}
+                          onDelete={handleDelete}
                         />
                       )}
                     </Fragment>
