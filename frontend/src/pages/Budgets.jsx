@@ -116,13 +116,13 @@ function BudgetRow({ budget, onSaved, onDeleted }) {
           <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
             <button
               onClick={() => setEditing(true)}
-              className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-100"
+              className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:opacity-70 transition-opacity duration-100"
             >
               Edit
             </button>
             <button
               onClick={() => setConfirmingDelete(true)}
-              className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-100"
+              className="text-[12px] font-medium text-red-600 dark:text-red-400 hover:opacity-70 transition-opacity duration-100"
             >
               Delete
             </button>
