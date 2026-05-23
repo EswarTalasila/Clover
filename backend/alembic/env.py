@@ -8,6 +8,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def get_database_url() -> str:
+    url = os.getenv("DATABASE_URL", "")
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+    return url
+
+
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -18,7 +28,7 @@ target_metadata = Base.metadata
 
 def run_migrations_offline():
     context.configure(
-        url=os.getenv("DATABASE_URL"),
+        url=get_database_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -34,7 +44,7 @@ def do_run_migrations(connection):
 
 
 async def run_migrations_online():
-    connectable = create_async_engine(os.getenv("DATABASE_URL"), poolclass=pool.NullPool)
+    connectable = create_async_engine(get_database_url(), poolclass=pool.NullPool)
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
