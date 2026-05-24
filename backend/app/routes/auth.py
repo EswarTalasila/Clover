@@ -9,7 +9,7 @@ from jose import jwt
 from app.database import get_db
 from app.lib.rate_limit import limiter
 from app.middleware.auth import get_current_user
-from app.models import User, Account, Transaction, Budget
+from app.models import User, Account, Transaction, Budget, Goal
 from app.schemas import UserCreate, UserLogin, TokenOut, UserOut, PasswordChange
 
 router = APIRouter()
@@ -116,6 +116,7 @@ async def delete_account(
 ):
     await db.execute(delete(Transaction).where(Transaction.user_id == user_id))
     await db.execute(delete(Budget).where(Budget.user_id == user_id))
+    await db.execute(delete(Goal).where(Goal.user_id == user_id))
     await db.execute(delete(Account).where(Account.user_id == user_id))
     await db.execute(delete(User).where(User.id == user_id))
     await db.commit()
