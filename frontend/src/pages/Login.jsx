@@ -40,6 +40,34 @@ function friendlyError(err, mode) {
   return { message: typeof detail === 'string' ? detail : 'Something went wrong. Please try again.' };
 }
 
+function ModeTabs({ mode, onChange }) {
+  const tabs = [
+    { value: 'login', label: 'Sign in' },
+    { value: 'register', label: 'Create account' },
+  ];
+  return (
+    <div className="grid grid-cols-2 border border-zinc-200 dark:border-zinc-800 p-0.5 mb-6">
+      {tabs.map((t) => {
+        const active = mode === t.value;
+        return (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => onChange(t.value)}
+            className={`h-9 text-[13px] font-medium transition-colors duration-100 ${
+              active
+                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+            }`}
+          >
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Login() {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -71,6 +99,7 @@ export default function Login() {
   }
 
   function switchMode(next) {
+    if (next === mode) return;
     setMode(next);
     setError(null);
     setPassword('');
@@ -80,15 +109,17 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-zinc-50/60 dark:bg-zinc-950 flex items-center justify-center px-6">
       <div className="w-full max-w-[360px] fade-in">
-        <div className="flex flex-col items-center mb-10">
-          <Logo className="w-10 h-10 mb-5" />
-          <h1 className="text-[22px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-            {mode === 'login' ? 'Sign in to Clover' : 'Create your Clover account'}
+        <div className="flex flex-col items-center mb-8">
+          <Logo className="w-10 h-10 mb-4" />
+          <h1 className="text-[20px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+            Welcome to Clover
           </h1>
-          <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mt-1.5">
-            {mode === 'login' ? 'Enter your email to continue.' : 'Start tracking your finances.'}
+          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-1">
+            Personal budgeting, your way.
           </p>
         </div>
+
+        <ModeTabs mode={mode} onChange={switchMode} />
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
@@ -166,19 +197,6 @@ export default function Login() {
             {loading ? 'Loading…' : mode === 'login' ? 'Sign in' : 'Create account'}
           </button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800 text-center">
-          <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
-            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
-            <button
-              type="button"
-              onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
-              className="text-zinc-900 dark:text-zinc-100 font-medium hover:underline underline-offset-2"
-            >
-              {mode === 'login' ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
-        </div>
       </div>
     </div>
   );
