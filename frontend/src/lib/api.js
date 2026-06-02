@@ -31,6 +31,10 @@ export function searchTransactions(q, limit = 8) {
   return api.get('/transactions/search', { params: { q, limit } }).then((r) => r.data);
 }
 
+export function aiSearchTransactions(q) {
+  return api.post('/transactions/search/ai', { q }).then((r) => r.data);
+}
+
 export function updateTransaction(id, data) {
   return api.patch(`/transactions/${id}`, data).then((r) => r.data);
 }
@@ -151,4 +155,20 @@ export function updateGoal(id, data) {
 
 export function deleteGoal(id) {
   return api.delete(`/goals/${id}`);
+}
+
+export function getGoalSuggestions() {
+  return api.get('/goals/suggestions').then((r) => r.data);
+}
+
+export function getGoalContributions(goalId) {
+  return api.get(`/goals/${goalId}/contributions`).then((r) => r.data);
+}
+
+export function addGoalContribution(goalId, data) {
+  return api.post(`/goals/${goalId}/contributions`, data).then((r) => r.data);
+}
+
+export function deleteGoalContribution(contributionId) {
+  return api.delete(`/goals/contributions/${contributionId}`);
 }
