@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [email, setEmail] = useState(() => localStorage.getItem('email'));
+  const [isDemo, setIsDemo] = useState(() => localStorage.getItem('demo') === '1');
 
   useEffect(() => {
     if (!token || email) return;
@@ -30,24 +31,32 @@ export function AuthProvider({ children }) {
     };
   }, [token, email]);
 
-  function saveToken(t, userEmail) {
+  function saveToken(t, userEmail, demo = false) {
     localStorage.setItem('token', t);
     setToken(t);
     if (userEmail) {
       localStorage.setItem('email', userEmail);
       setEmail(userEmail);
     }
+    if (demo) {
+      localStorage.setItem('demo', '1');
+    } else {
+      localStorage.removeItem('demo');
+    }
+    setIsDemo(demo);
   }
 
   function clearToken() {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
+    localStorage.removeItem('demo');
     setToken(null);
     setEmail(null);
+    setIsDemo(false);
   }
 
   return (
-    <AuthContext.Provider value={{ token, email, saveToken, clearToken }}>
+    <AuthContext.Provider value={{ token, email, isDemo, saveToken, clearToken }}>
       {children}
     </AuthContext.Provider>
   );

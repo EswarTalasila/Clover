@@ -137,9 +137,9 @@ function BudgetRow({ item, month, onSaved }) {
           )}
         </div>
       </div>
-      <div className="h-[3px] bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+      <div className="h-[3px] rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
         <div
-          className={`h-full transition-[width] duration-500 ease-out ${
+          className={`h-full rounded-full transition-[width] duration-500 ease-out ${
             limit === null
               ? 'bg-zinc-300 dark:bg-zinc-700'
               : over
@@ -319,7 +319,7 @@ export default function Dashboard() {
       )}
 
       {!loading && !error && (
-        <div className="panel">
+        <div className="panel overflow-hidden">
           {summary.length === 0 ? (
             <div className="p-12 text-center">
               <p className="text-[13px] text-zinc-600 dark:text-zinc-300">No activity this month yet.</p>

@@ -105,7 +105,7 @@ export default function Accounts() {
       {loading ? (
         <p className="text-[13px] text-zinc-500 dark:text-zinc-400">Loading…</p>
       ) : (
-        <div className="panel">
+        <div className="panel overflow-hidden">
           {accounts.length === 0 ? (
             <div className="p-16 text-center">
               <p className="text-[13px] text-zinc-600 dark:text-zinc-300">No banks connected yet.</p>

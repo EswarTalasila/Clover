@@ -125,7 +125,7 @@ export default function Subscriptions() {
             </span>
           </div>
 
-          <div className="panel mb-8">
+          <div className="panel mb-8 overflow-hidden">
             {outflow.length === 0 ? (
               <div className="p-12 text-center">
                 <p className="text-[13px] text-zinc-600 dark:text-zinc-300">
@@ -204,7 +204,7 @@ export default function Subscriptions() {
                   {inflow.length} {inflow.length === 1 ? 'stream' : 'streams'}
                 </span>
               </div>
-              <div className="panel">
+              <div className="panel overflow-hidden">
                 <div className="overflow-x-auto"><table className="table-base">
                   <thead>
                     <tr>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
+import CommandPalette from './CommandPalette';
 
 function Icon({ name, className = 'w-[15px] h-[15px]' }) {
   const icons = {
@@ -20,6 +21,12 @@ function Icon({ name, className = 'w-[15px] h-[15px]' }) {
     chevron: <path d="M8 9l4-4 4 4m0 6l-4 4-4-4" />,
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
     close: <path d="M6 18L18 6M6 6l12 12" />,
+    search: (
+      <>
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </>
+    ),
   };
   const filled = name === 'dashboard';
   return (
@@ -72,9 +79,9 @@ function UserMenu() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 pl-1.5 pr-2 h-8 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-100"
+        className="flex items-center gap-2 pl-1.5 pr-2 h-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-100"
       >
-        <div className="w-6 h-6 bg-emerald-700 dark:bg-emerald-500 text-white flex items-center justify-center text-[11px] font-semibold flex-shrink-0">
+        <div className="w-6 h-6 rounded-full bg-emerald-700 dark:bg-emerald-500 text-white flex items-center justify-center text-[11px] font-semibold flex-shrink-0">
           {initial}
         </div>
         <span className="hidden sm:inline text-[12px] font-medium text-zinc-700 dark:text-zinc-200 truncate max-w-[180px]">
@@ -84,7 +91,7 @@ function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-1.5 w-[220px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg dark:shadow-black/40 py-1 fade-in">
+        <div className="absolute top-full right-0 mt-1.5 w-[220px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden shadow-lg dark:shadow-black/40 py-1 fade-in">
           <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Signed in as</p>
             <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
@@ -129,7 +136,7 @@ function Sidebar({ onNavigate }) {
             end={end}
             onClick={onNavigate}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium transition-colors duration-100 ${
+              `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium rounded-lg transition-colors duration-100 ${
                 isActive
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
@@ -147,7 +154,7 @@ function Sidebar({ onNavigate }) {
           to="/settings"
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium transition-colors duration-100 ${
+            `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium rounded-lg transition-colors duration-100 ${
               isActive
                 ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
@@ -162,14 +169,50 @@ function Sidebar({ onNavigate }) {
   );
 }
 
+function DemoBanner() {
+  const { clearToken } = useAuth();
+  const navigate = useNavigate();
+
+  function leaveDemo() {
+    clearToken();
+    navigate('/login');
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-2 px-4 py-1.5 text-[12px] text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border-b border-emerald-200 dark:border-emerald-900/50">
+      <span className="text-center">You're exploring a demo with sample data.</span>
+      <button
+        onClick={leaveDemo}
+        className="font-medium underline underline-offset-2 hover:text-emerald-900 dark:hover:text-emerald-200 whitespace-nowrap"
+      >
+        Create your account
+      </button>
+    </div>
+  );
+}
+
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const location = useLocation();
+  const { isDemo } = useAuth();
 
   // Auto-close drawer on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
+
+  // ⌘K / Ctrl+K toggles the command palette from anywhere
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <div className="flex h-screen bg-white dark:bg-zinc-950 overflow-hidden">
@@ -189,22 +232,51 @@ export default function Layout({ children }) {
       </aside>
 
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 pb-[env(safe-area-inset-bottom)]">
-        <header className="px-4 md:px-8 flex items-center justify-between md:justify-end border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))]">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="md:hidden inline-flex items-center justify-center w-9 h-9 -ml-1.5 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
-            aria-label="Open menu"
-          >
-            <Icon name="menu" className="w-5 h-5" />
-          </button>
+        {isDemo && (
+          <div className="flex-shrink-0">
+            <DemoBanner />
+          </div>
+        )}
+        <header className="px-4 md:px-8 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))]">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden inline-flex items-center justify-center w-9 h-9 -ml-1.5 rounded-lg text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
+              aria-label="Open menu"
+            >
+              <Icon name="menu" className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="hidden md:flex items-center gap-2 h-8 w-[260px] pl-2.5 pr-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-100"
+            >
+              <Icon name="search" className="w-[14px] h-[14px]" />
+              <span className="text-[12px] flex-1 text-left">Search…</span>
+              <kbd className="text-[10px] font-medium border border-zinc-200 dark:border-zinc-700 rounded px-1 py-0.5">
+                ⌘K
+              </kbd>
+            </button>
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
+              aria-label="Search"
+            >
+              <Icon name="search" className="w-5 h-5" />
+            </button>
+          </div>
           <UserMenu />
         </header>
         <div className="flex-1 overflow-auto">
-          <div className="max-w-[1100px] mx-auto px-4 md:px-10 py-6 md:py-10 fade-in">
+          <div
+            key={location.pathname}
+            className="max-w-[1100px] mx-auto px-4 md:px-10 py-6 md:py-10 fade-in"
+          >
             {children}
           </div>
         </div>
       </main>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 }
