@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, register, demoLogin } from '../lib/api';
+import { login, register, demoLogin, forgotPassword } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
 
@@ -68,6 +68,85 @@ function ModeTabs({ mode, onChange }) {
   );
 }
 
+function ForgotPasswordForm({ onBack }) {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState(null);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await forgotPassword(email);
+      setSent(true);
+    } catch (err) {
+      setError(
+        err.response?.status === 429
+          ? 'Too many attempts. Wait a bit and try again.'
+          : "Couldn't send the reset link. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (sent) {
+    return (
+      <div className="text-center">
+        <h2 className="text-[16px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+          Check your email
+        </h2>
+        <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">
+          If an account exists for{' '}
+          <span className="font-medium text-zinc-700 dark:text-zinc-300">{email}</span>, we've sent a
+          link to reset your password. It expires in 30 minutes.
+        </p>
+        <button onClick={onBack} className="btn-secondary w-full mt-6">
+          Back to sign in
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3.5">
+      <div className="text-center mb-2">
+        <h2 className="text-[16px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+          Reset your password
+        </h2>
+        <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-1">
+          Enter your email and we'll send you a reset link.
+        </p>
+      </div>
+      <div>
+        <label className="label">Email</label>
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="input"
+          placeholder="you@example.com"
+          autoComplete="email"
+        />
+      </div>
+      {error && (
+        <div className="text-[13px] text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
+          {error}
+        </div>
+      )}
+      <button type="submit" disabled={loading} className="btn-primary w-full">
+        {loading ? 'Sending…' : 'Send reset link'}
+      </button>
+      <button type="button" onClick={onBack} className="btn-ghost w-full">
+        Back to sign in
+      </button>
+    </form>
+  );
+}
+
 export default function Login() {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -76,6 +155,7 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
+  const [forgot, setForgot] = useState(false);
   const { saveToken } = useAuth();
   const navigate = useNavigate();
 
@@ -133,6 +213,10 @@ export default function Login() {
           </p>
         </div>
 
+        {forgot ? (
+          <ForgotPasswordForm onBack={() => setForgot(false)} />
+        ) : (
+          <>
         <ModeTabs mode={mode} onChange={switchMode} />
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -166,6 +250,21 @@ export default function Login() {
               </p>
             )}
           </div>
+
+          {mode === 'login' && (
+            <div className="-mt-1 text-right">
+              <button
+                type="button"
+                onClick={() => {
+                  setForgot(true);
+                  setError(null);
+                }}
+                className="text-[12px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-2"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
 
           {mode === 'register' && (
             <div>
@@ -232,6 +331,8 @@ export default function Login() {
             Jump in with sample data — no account needed.
           </p>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

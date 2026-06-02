@@ -87,6 +87,14 @@ export function demoLogin() {
   return api.post('/auth/demo').then((r) => r.data);
 }
 
+export function forgotPassword(email) {
+  return api.post('/auth/forgot-password', { email }).then((r) => r.data);
+}
+
+export function resetPassword(token, new_password) {
+  return api.post('/auth/reset-password', { token, new_password }).then((r) => r.data);
+}
+
 export function getMe() {
   return api.get('/auth/me').then((r) => r.data);
 }

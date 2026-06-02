@@ -31,6 +31,15 @@ class PasswordChange(BaseModel):
     new_password: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+
 class TransactionCreate(BaseModel):
     amount: Decimal
     description: str

@@ -1,3 +1,4 @@
+import hashlib
 import os
 import random
 import secrets
@@ -11,9 +12,24 @@ from sqlalchemy import select, delete
 from jose import jwt
 from app.database import get_db
 from app.lib.rate_limit import limiter
+from app.lib.mailer import send_email
 from app.middleware.auth import get_current_user
-from app.models import User, Account, Transaction, Budget, Goal, GoalContribution
-from app.schemas import UserCreate, UserLogin, TokenOut, UserOut, PasswordChange
+from app.models import User, Account, Transaction, Budget, Goal, GoalContribution, PasswordResetToken
+from app.schemas import (
+    UserCreate,
+    UserLogin,
+    TokenOut,
+    UserOut,
+    PasswordChange,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+)
+
+RESET_TOKEN_TTL = timedelta(minutes=30)
+
+
+def _hash_token(raw: str) -> str:
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 router = APIRouter()
 
@@ -270,6 +286,84 @@ async def change_password(
     await db.commit()
 
 
+@router.post("/forgot-password")
+@limiter.limit("5/hour")
+async def forgot_password(
+    request: Request,
+    response: Response,
+    body: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    # Always return the same response so the endpoint can't be used to discover
+    # which emails have accounts.
+    generic = {"message": "If an account exists for that email, a reset link has been sent."}
+
+    user = (await db.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
+    if not user:
+        return generic
+
+    # Only one active reset link at a time.
+    await db.execute(
+        delete(PasswordResetToken).where(
+            PasswordResetToken.user_id == user.id, PasswordResetToken.used_at.is_(None)
+        )
+    )
+
+    raw_token = secrets.token_urlsafe(32)
+    db.add(
+        PasswordResetToken(
+            user_id=user.id,
+            token_hash=_hash_token(raw_token),
+            expires_at=datetime.utcnow() + RESET_TOKEN_TTL,
+        )
+    )
+    await db.commit()
+
+    frontend = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+    link = f"{frontend}/reset-password?token={raw_token}"
+    await send_email(
+        to=user.email,
+        subject="Reset your Clover password",
+        body=(
+            "We received a request to reset your Clover password.\n\n"
+            f"Reset it here (this link expires in 30 minutes):\n{link}\n\n"
+            "If you didn't request this, you can safely ignore this email."
+        ),
+    )
+    return generic
+
+
+@router.post("/reset-password")
+@limiter.limit("10/hour")
+async def reset_password(
+    request: Request,
+    response: Response,
+    body: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    invalid = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="This reset link is invalid or has expired.",
+    )
+
+    reset = (
+        await db.execute(
+            select(PasswordResetToken).where(PasswordResetToken.token_hash == _hash_token(body.token))
+        )
+    ).scalar_one_or_none()
+    if not reset or reset.used_at is not None or reset.expires_at < datetime.utcnow():
+        raise invalid
+
+    user = (await db.execute(select(User).where(User.id == reset.user_id))).scalar_one_or_none()
+    if not user:
+        raise invalid
+
+    user.hashed_password = hash_password(body.new_password)
+    reset.used_at = datetime.utcnow()
+    await db.commit()
+    return {"message": "Your password has been reset. You can now sign in."}
+
+
 @router.get("/export")
 async def export_data(
     db: AsyncSession = Depends(get_db),
@@ -306,6 +400,7 @@ async def delete_account(
     db: AsyncSession = Depends(get_db),
     user_id: uuid.UUID = Depends(get_current_user),
 ):
+    await db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
     await db.execute(delete(GoalContribution).where(GoalContribution.user_id == user_id))
     await db.execute(delete(Transaction).where(Transaction.user_id == user_id))
     await db.execute(delete(Budget).where(Budget.user_id == user_id))
