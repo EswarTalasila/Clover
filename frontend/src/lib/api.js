@@ -27,6 +27,14 @@ export function createTransaction(data) {
   return api.post('/transactions', data).then((r) => r.data);
 }
 
+export function searchTransactions(q, limit = 8) {
+  return api.get('/transactions/search', { params: { q, limit } }).then((r) => r.data);
+}
+
+export function aiSearchTransactions(q) {
+  return api.post('/transactions/search/ai', { q }).then((r) => r.data);
+}
+
 export function updateTransaction(id, data) {
   return api.patch(`/transactions/${id}`, data).then((r) => r.data);
 }
@@ -73,6 +81,18 @@ export function register(data) {
 
 export function login(data) {
   return api.post('/auth/login', data).then((r) => r.data);
+}
+
+export function demoLogin() {
+  return api.post('/auth/demo').then((r) => r.data);
+}
+
+export function forgotPassword(email) {
+  return api.post('/auth/forgot-password', { email }).then((r) => r.data);
+}
+
+export function resetPassword(token, new_password) {
+  return api.post('/auth/reset-password', { token, new_password }).then((r) => r.data);
 }
 
 export function getMe() {
@@ -143,4 +163,20 @@ export function updateGoal(id, data) {
 
 export function deleteGoal(id) {
   return api.delete(`/goals/${id}`);
+}
+
+export function getGoalSuggestions() {
+  return api.get('/goals/suggestions').then((r) => r.data);
+}
+
+export function getGoalContributions(goalId) {
+  return api.get(`/goals/${goalId}/contributions`).then((r) => r.data);
+}
+
+export function addGoalContribution(goalId, data) {
+  return api.post(`/goals/${goalId}/contributions`, data).then((r) => r.data);
+}
+
+export function deleteGoalContribution(contributionId) {
+  return api.delete(`/goals/contributions/${contributionId}`);
 }

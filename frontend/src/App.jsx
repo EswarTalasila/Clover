@@ -10,6 +10,7 @@ import Subscriptions from './pages/Subscriptions';
 import Goals from './pages/Goals';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 
 function ProtectedRoutes() {
   const { token } = useAuth();
@@ -36,6 +37,7 @@ export default function App() {
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </BrowserRouter>

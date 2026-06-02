@@ -20,7 +20,7 @@ export default function Toast({ message, type = 'info', onDismiss, duration = 40
   return (
     <div className="fixed bottom-6 right-6 z-[60] fade-in pointer-events-auto">
       <div
-        className={`px-4 py-3 text-[13px] font-medium border shadow-lg dark:shadow-black/40 max-w-sm flex items-start gap-3 ${styles[type]}`}
+        className={`px-4 py-3 rounded-lg text-[13px] font-medium border shadow-lg dark:shadow-black/40 max-w-sm flex items-start gap-3 ${styles[type]}`}
       >
         <span className="flex-1">{message}</span>
         <button
