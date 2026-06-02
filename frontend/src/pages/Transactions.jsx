@@ -55,7 +55,7 @@ function CategoryTag({ category }) {
   if (!category) return <span className="text-[12px] text-zinc-400 dark:text-zinc-500">—</span>;
   return (
     <span className="inline-flex items-center gap-1.5 text-[12px] text-zinc-700 dark:text-zinc-300">
-      <span className={`w-1.5 h-1.5 ${CATEGORY_DOT[category] || 'bg-zinc-400'}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_DOT[category] || 'bg-zinc-400'}`} />
       {category}
     </span>
   );
@@ -149,13 +149,13 @@ function ExpandedRow({ tx, onSaveNotes, onToggleExclude, onDelete }) {
                 <img
                   src={tx.merchant_logo_url}
                   alt=""
-                  className="w-10 h-10 object-contain bg-white border border-zinc-200 dark:border-zinc-800 flex-shrink-0"
+                  className="w-10 h-10 rounded-lg object-contain bg-white border border-zinc-200 dark:border-zinc-800 flex-shrink-0"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
               ) : (
-                <div className="w-10 h-10 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-[14px] font-bold flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-[14px] font-bold flex-shrink-0">
                   {(tx.merchant_name || tx.description)[0]?.toUpperCase()}
                 </div>
               )}
@@ -579,7 +579,7 @@ export default function Transactions() {
       )}
 
       {!loading && !error && (
-        <div className="panel">
+        <div className="panel overflow-hidden">
           {transactions.length === 0 ? (
             <div className="p-16 text-center">
               <p className="text-[13px] text-zinc-600 dark:text-zinc-300">No transactions for this month.</p>
@@ -631,12 +631,12 @@ export default function Transactions() {
                                   {t.description}
                                 </span>
                                 {t.pending && (
-                                  <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50">
+                                  <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50">
                                     Pending
                                   </span>
                                 )}
                                 {t.excluded && (
-                                  <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                                  <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                                     Excluded
                                   </span>
                                 )}

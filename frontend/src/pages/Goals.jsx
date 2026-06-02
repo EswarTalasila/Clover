@@ -137,9 +137,9 @@ function GoalCard({ goal, onSaved, onDeleted, onChanged }) {
             of {fmt(target)}
           </p>
         </div>
-        <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
           <div
-            className={`h-full transition-[width] duration-500 ease-out ${
+            className={`h-full rounded-full transition-[width] duration-500 ease-out ${
               complete ? 'bg-emerald-500' : 'bg-zinc-900 dark:bg-zinc-100'
             }`}
             style={{ width: `${pct}%` }}

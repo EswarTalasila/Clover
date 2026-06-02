@@ -57,7 +57,7 @@ export default function ConfirmDialog({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl dark:shadow-black/60 w-full max-w-[420px]"
+        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xl dark:shadow-black/60 w-full max-w-[420px]"
       >
         <div className="px-6 pt-6 pb-5">
           <h2 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">

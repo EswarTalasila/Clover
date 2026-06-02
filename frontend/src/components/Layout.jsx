@@ -79,9 +79,9 @@ function UserMenu() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 pl-1.5 pr-2 h-8 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-100"
+        className="flex items-center gap-2 pl-1.5 pr-2 h-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-100"
       >
-        <div className="w-6 h-6 bg-emerald-700 dark:bg-emerald-500 text-white flex items-center justify-center text-[11px] font-semibold flex-shrink-0">
+        <div className="w-6 h-6 rounded-full bg-emerald-700 dark:bg-emerald-500 text-white flex items-center justify-center text-[11px] font-semibold flex-shrink-0">
           {initial}
         </div>
         <span className="hidden sm:inline text-[12px] font-medium text-zinc-700 dark:text-zinc-200 truncate max-w-[180px]">
@@ -91,7 +91,7 @@ function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-1.5 w-[220px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg dark:shadow-black/40 py-1 fade-in">
+        <div className="absolute top-full right-0 mt-1.5 w-[220px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden shadow-lg dark:shadow-black/40 py-1 fade-in">
           <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Signed in as</p>
             <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
@@ -136,7 +136,7 @@ function Sidebar({ onNavigate }) {
             end={end}
             onClick={onNavigate}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium transition-colors duration-100 ${
+              `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium rounded-lg transition-colors duration-100 ${
                 isActive
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
@@ -154,7 +154,7 @@ function Sidebar({ onNavigate }) {
           to="/settings"
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium transition-colors duration-100 ${
+            `flex items-center gap-2.5 px-2.5 h-9 md:h-8 text-[13px] font-medium rounded-lg transition-colors duration-100 ${
               isActive
                 ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent'
@@ -241,24 +241,24 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden inline-flex items-center justify-center w-9 h-9 -ml-1.5 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
+              className="md:hidden inline-flex items-center justify-center w-9 h-9 -ml-1.5 rounded-lg text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
               aria-label="Open menu"
             >
               <Icon name="menu" className="w-5 h-5" />
             </button>
             <button
               onClick={() => setPaletteOpen(true)}
-              className="hidden md:flex items-center gap-2 h-8 w-[260px] pl-2.5 pr-1.5 text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-100"
+              className="hidden md:flex items-center gap-2 h-8 w-[260px] pl-2.5 pr-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-100"
             >
               <Icon name="search" className="w-[14px] h-[14px]" />
               <span className="text-[12px] flex-1 text-left">Search…</span>
-              <kbd className="text-[10px] font-medium border border-zinc-200 dark:border-zinc-700 px-1 py-0.5">
+              <kbd className="text-[10px] font-medium border border-zinc-200 dark:border-zinc-700 rounded px-1 py-0.5">
                 ⌘K
               </kbd>
             </button>
             <button
               onClick={() => setPaletteOpen(true)}
-              className="md:hidden inline-flex items-center justify-center w-9 h-9 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
+              className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-100"
               aria-label="Search"
             >
               <Icon name="search" className="w-5 h-5" />
@@ -267,7 +267,10 @@ export default function Layout({ children }) {
           <UserMenu />
         </header>
         <div className="flex-1 overflow-auto">
-          <div className="max-w-[1100px] mx-auto px-4 md:px-10 py-6 md:py-10 fade-in">
+          <div
+            key={location.pathname}
+            className="max-w-[1100px] mx-auto px-4 md:px-10 py-6 md:py-10 fade-in"
+          >
             {children}
           </div>
         </div>

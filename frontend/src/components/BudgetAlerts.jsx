@@ -22,7 +22,7 @@ export default function BudgetAlerts({ summary }) {
   const nearing = alerts.filter((a) => a.pct < 100);
 
   return (
-    <div className="mb-6 border border-amber-300 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/30 px-4 py-3 fade-in">
+    <div className="mb-6 rounded-lg border border-amber-300 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/30 px-4 py-3 fade-in">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <p className="text-[12px] font-semibold text-amber-900 dark:text-amber-200 uppercase tracking-[0.06em]">

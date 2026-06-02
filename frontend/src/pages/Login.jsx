@@ -46,7 +46,7 @@ function ModeTabs({ mode, onChange }) {
     { value: 'register', label: 'Create account' },
   ];
   return (
-    <div className="grid grid-cols-2 border border-zinc-200 dark:border-zinc-800 p-0.5 mb-6">
+    <div className="grid grid-cols-2 border border-zinc-200 dark:border-zinc-800 rounded-lg p-0.5 mb-6">
       {tabs.map((t) => {
         const active = mode === t.value;
         return (
@@ -54,7 +54,7 @@ function ModeTabs({ mode, onChange }) {
             key={t.value}
             type="button"
             onClick={() => onChange(t.value)}
-            className={`h-9 text-[13px] font-medium transition-colors duration-100 ${
+            className={`h-9 text-[13px] font-medium rounded-md transition-colors duration-100 ${
               active
                 ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -189,7 +189,7 @@ export default function Login() {
           )}
 
           {error && (
-            <div className="text-[13px] text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 px-3 py-2">
+            <div className="text-[13px] text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
               <p>{error.message}</p>
               {error.action && (
                 <button
