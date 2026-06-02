@@ -64,6 +64,8 @@ def mock_external_services():
     }
     with patch("app.routes.transactions.categorize_transaction", AsyncMock(return_value="Food & Dining")), \
          patch("app.routes.plaid.categorize_transaction", AsyncMock(return_value="Food & Dining")), \
+         patch("app.routes.goals.suggest_goal_contributions", AsyncMock(return_value=[])), \
+         patch("app.routes.transactions.parse_search_query", AsyncMock(return_value={"text": None, "interpretation": "All results"})), \
          patch("app.lib.plaid.create_link_token", AsyncMock(return_value="link-sandbox-fake")), \
          patch("app.lib.plaid.exchange_public_token", AsyncMock(return_value=("access-fake", "item-fake"))), \
          patch("app.lib.plaid.sync_transactions", AsyncMock(return_value=sample_sync)), \

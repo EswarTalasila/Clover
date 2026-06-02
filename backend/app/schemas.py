@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from pydantic import BaseModel, EmailStr, Field
 
@@ -163,3 +163,39 @@ class GoalOut(BaseModel):
     note: str | None
 
     model_config = {"from_attributes": True}
+
+
+class ContributionCreate(BaseModel):
+    transaction_id: uuid.UUID | None = None
+    amount: Decimal
+    note: str | None = None
+
+
+class ContributionOut(BaseModel):
+    id: uuid.UUID
+    goal_id: uuid.UUID
+    transaction_id: uuid.UUID | None
+    amount: Decimal
+    source: str
+    note: str | None
+    created_at: datetime
+    transaction_description: str | None = None
+    transaction_date: date | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class GoalSuggestion(BaseModel):
+    transaction_id: uuid.UUID
+    description: str
+    merchant_name: str | None
+    amount: Decimal
+    date: date
+    goal_id: uuid.UUID
+    goal_name: str
+    reason: str
+
+
+class AiSearchResponse(BaseModel):
+    interpretation: str
+    results: list[TransactionOut]

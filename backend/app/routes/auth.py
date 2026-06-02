@@ -12,7 +12,7 @@ from jose import jwt
 from app.database import get_db
 from app.lib.rate_limit import limiter
 from app.middleware.auth import get_current_user
-from app.models import User, Account, Transaction, Budget, Goal
+from app.models import User, Account, Transaction, Budget, Goal, GoalContribution
 from app.schemas import UserCreate, UserLogin, TokenOut, UserOut, PasswordChange
 
 router = APIRouter()
@@ -128,7 +128,7 @@ def _build_demo_transactions(user_id: uuid.UUID) -> list[Transaction]:
         y, m = month_year(offset)
         max_day = today.day if offset == 0 else 28
 
-        def tx(day, amount, description, merchant, category):
+        def tx(day, amount, description, merchant, category, excluded=False):
             txns.append(
                 Transaction(
                     user_id=user_id,
@@ -139,6 +139,7 @@ def _build_demo_transactions(user_id: uuid.UUID) -> list[Transaction]:
                     iso_currency_code="USD",
                     date=date(y, m, max(1, min(day, max_day))),
                     is_manual=True,
+                    excluded=excluded,
                 )
             )
 
@@ -174,6 +175,13 @@ def _build_demo_transactions(user_id: uuid.UUID) -> list[Transaction]:
         if offset == 3:
             for name, low, high in _DEMO_TRAVEL:
                 tx(random.randint(10, 20), _rand_amount(low, high), name, name, "Travel")
+
+        # Money set aside — excluded from spending, used as AI goal-contribution candidates
+        if offset < 3:
+            tx(2, Decimal("400.00"), "Transfer to Ally Savings", "Ally Bank", "Other", excluded=True)
+            tx(3, Decimal("250.00"), "Vanguard Brokerage Deposit", "Vanguard", "Other", excluded=True)
+            tx(18, Decimal("150.00"), "Japan Trip Fund Transfer", "Ally Bank", "Other", excluded=True)
+            tx(20, Decimal("300.00"), "Chase Credit Card Payment", "Chase", "Other", excluded=True)
 
     return txns
 
@@ -298,6 +306,7 @@ async def delete_account(
     db: AsyncSession = Depends(get_db),
     user_id: uuid.UUID = Depends(get_current_user),
 ):
+    await db.execute(delete(GoalContribution).where(GoalContribution.user_id == user_id))
     await db.execute(delete(Transaction).where(Transaction.user_id == user_id))
     await db.execute(delete(Budget).where(Budget.user_id == user_id))
     await db.execute(delete(Goal).where(Goal.user_id == user_id))

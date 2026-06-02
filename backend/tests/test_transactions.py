@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, timedelta
+from unittest.mock import AsyncMock, patch
 
 import pytest_asyncio
 from sqlalchemy import select
@@ -255,3 +256,30 @@ async def test_search_only_returns_own_transactions(client, headers, db_session)
     resp = await client.get("/api/transactions/search?q=latte", headers=headers)
     descriptions = [t["description"] for t in resp.json()]
     assert descriptions == ["My latte"]
+
+
+async def test_ai_search_applies_parsed_filters(client, headers, db_session):
+    await make_tx(db_session, "test@example.com", description="Cheap snack", amount=3, category="Food & Dining")
+    await make_tx(db_session, "test@example.com", description="Big dinner", amount=80, category="Food & Dining")
+    await make_tx(db_session, "test@example.com", description="New shoes", amount=90, category="Shopping")
+
+    parsed = {"category": "Food & Dining", "min_amount": 20, "interpretation": "Food & Dining over $20"}
+    with patch("app.routes.transactions.parse_search_query", AsyncMock(return_value=parsed)):
+        resp = await client.post(
+            "/api/transactions/search/ai", headers=headers, json={"q": "food over 20"}
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["interpretation"] == "Food & Dining over $20"
+    assert [t["description"] for t in body["results"]] == ["Big dinner"]
+
+
+async def test_ai_search_empty_query_returns_empty(client, headers):
+    resp = await client.post("/api/transactions/search/ai", headers=headers, json={"q": "   "})
+    assert resp.status_code == 200
+    assert resp.json()["results"] == []
+
+
+async def test_ai_search_requires_auth(client):
+    resp = await client.post("/api/transactions/search/ai", json={"q": "coffee"})
+    assert resp.status_code == 403

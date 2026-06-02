@@ -1,14 +1,16 @@
 import uuid
 from datetime import date
+from decimal import Decimal, InvalidOperation
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, case, or_
 from sqlalchemy.orm import selectinload
+from pydantic import BaseModel
 from app.database import get_db
 from app.middleware.auth import get_current_user
 from app.models import Transaction
-from app.schemas import TransactionCreate, TransactionUpdate, TransactionOut, TopMerchant
-from app.lib.claude import categorize_transaction
+from app.schemas import TransactionCreate, TransactionUpdate, TransactionOut, TopMerchant, AiSearchResponse
+from app.lib.claude import categorize_transaction, parse_search_query, CATEGORIES
 
 
 def to_out(tx: Transaction) -> TransactionOut:
@@ -91,6 +93,80 @@ async def search_transactions(
     )
     result = await db.execute(query)
     return [to_out(tx) for tx in result.scalars().all()]
+
+
+class AiSearchRequest(BaseModel):
+    q: str
+
+
+def _to_decimal(value):
+    if value is None:
+        return None
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def _to_date(value):
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(str(value))
+    except (ValueError, TypeError):
+        return None
+
+
+@router.post("/search/ai", response_model=AiSearchResponse)
+async def ai_search(
+    body: AiSearchRequest,
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(get_current_user),
+):
+    q = body.q.strip()
+    if not q:
+        return AiSearchResponse(interpretation="", results=[])
+
+    filters = await parse_search_query(q)
+
+    query = (
+        select(Transaction)
+        .options(selectinload(Transaction.account))
+        .where(Transaction.user_id == user_id)
+    )
+
+    text = filters.get("text")
+    if text:
+        query = query.where(
+            or_(
+                Transaction.description.icontains(str(text), autoescape=True),
+                Transaction.merchant_name.icontains(str(text), autoescape=True),
+            )
+        )
+    category = filters.get("category")
+    if category in CATEGORIES:
+        query = query.where(Transaction.category == category)
+
+    min_amount = _to_decimal(filters.get("min_amount"))
+    if min_amount is not None:
+        query = query.where(Transaction.amount >= min_amount)
+    max_amount = _to_decimal(filters.get("max_amount"))
+    if max_amount is not None:
+        query = query.where(Transaction.amount <= max_amount)
+
+    start_date = _to_date(filters.get("start_date"))
+    if start_date:
+        query = query.where(Transaction.date >= start_date)
+    end_date = _to_date(filters.get("end_date"))
+    if end_date:
+        query = query.where(Transaction.date <= end_date)
+
+    query = query.order_by(Transaction.date.desc()).limit(50)
+    result = await db.execute(query)
+    rows = [to_out(tx) for tx in result.scalars().all()]
+
+    interpretation = str(filters.get("interpretation") or f'Results for "{q}"')
+    return AiSearchResponse(interpretation=interpretation, results=rows)
 
 
 @router.post("", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
