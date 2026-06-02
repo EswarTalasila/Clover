@@ -197,3 +197,61 @@ async def test_top_merchants_filters_by_month(client, headers, db_session):
     merchants = [m["merchant"] for m in resp.json()]
     assert "MayBuy" in merchants
     assert "AprilBuy" not in merchants
+
+
+async def test_search_matches_description_merchant_and_notes(client, headers, db_session):
+    await make_tx(db_session, "test@example.com", description="Morning coffee", merchant_name="Blue Bottle")
+    await make_tx(db_session, "test@example.com", description="Lunch", merchant_name="Sweetgreen", notes="coffee meeting")
+    await make_tx(db_session, "test@example.com", description="Gas", merchant_name="Shell")
+
+    by_desc = await client.get("/api/transactions/search?q=coffee", headers=headers)
+    assert by_desc.status_code == 200
+    found = {t["description"] for t in by_desc.json()}
+    assert found == {"Morning coffee", "Lunch"}  # matches description and notes
+
+    by_merchant = await client.get("/api/transactions/search?q=shell", headers=headers)
+    assert [t["merchant_name"] for t in by_merchant.json()] == ["Shell"]
+
+
+async def test_search_empty_query_returns_empty(client, headers, db_session):
+    await make_tx(db_session, "test@example.com", description="Anything")
+    resp = await client.get("/api/transactions/search?q=%20%20", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+async def test_search_respects_limit(client, headers, db_session):
+    for i in range(5):
+        await make_tx(db_session, "test@example.com", description=f"Subscription {i}")
+    resp = await client.get("/api/transactions/search?q=subscription&limit=2", headers=headers)
+    assert resp.status_code == 200
+    assert len(resp.json()) == 2
+
+
+async def test_search_escapes_sql_wildcards(client, headers, db_session):
+    await make_tx(db_session, "test@example.com", description="50% off sale")
+    await make_tx(db_session, "test@example.com", description="regular price")
+    resp = await client.get("/api/transactions/search?q=%25", headers=headers)  # q = "%"
+    assert resp.status_code == 200
+    descriptions = [t["description"] for t in resp.json()]
+    assert descriptions == ["50% off sale"]  # literal %, not a match-all wildcard
+
+
+async def test_search_requires_auth(client):
+    resp = await client.get("/api/transactions/search?q=coffee")
+    assert resp.status_code == 403
+
+
+async def test_search_only_returns_own_transactions(client, headers, db_session):
+    await make_tx(db_session, "test@example.com", description="My latte")
+
+    other = await client.post(
+        "/api/auth/register",
+        json={"email": "searcher@example.com", "password": "password123"},
+    )
+    other_headers = {"Authorization": f"Bearer {other.json()['access_token']}"}
+    await make_tx(db_session, "searcher@example.com", description="Their latte")
+
+    resp = await client.get("/api/transactions/search?q=latte", headers=headers)
+    descriptions = [t["description"] for t in resp.json()]
+    assert descriptions == ["My latte"]

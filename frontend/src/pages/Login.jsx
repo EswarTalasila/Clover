@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, register } from '../lib/api';
+import { login, register, demoLogin } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
 
@@ -24,7 +24,7 @@ function friendlyError(err, mode) {
       };
     }
     if (status === 422) {
-      return { message: 'Please enter a valid email and a password with at least 6 characters.' };
+      return { message: 'Please enter a valid email and a password with at least 8 characters.' };
     }
   }
 
@@ -75,8 +75,22 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const { saveToken } = useAuth();
   const navigate = useNavigate();
+
+  async function handleDemo() {
+    setDemoLoading(true);
+    setError(null);
+    try {
+      const data = await demoLogin();
+      saveToken(data.access_token, 'Demo user', true);
+      navigate('/');
+    } catch (err) {
+      setError(friendlyError(err, mode));
+      setDemoLoading(false);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -191,12 +205,33 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={loading || (mode === 'register' && password !== confirmPassword)}
+            disabled={loading || demoLoading || (mode === 'register' && password !== confirmPassword)}
             className="btn-primary w-full"
           >
             {loading ? 'Loading…' : mode === 'login' ? 'Sign in' : 'Create account'}
           </button>
         </form>
+
+        <div className="mt-6">
+          <div className="relative flex items-center">
+            <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800" />
+            <span className="mx-3 text-[11px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              or
+            </span>
+            <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800" />
+          </div>
+          <button
+            type="button"
+            onClick={handleDemo}
+            disabled={loading || demoLoading}
+            className="btn-secondary w-full mt-6"
+          >
+            {demoLoading ? 'Setting up your demo…' : 'Explore the demo'}
+          </button>
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-2 text-center">
+            Jump in with sample data — no account needed.
+          </p>
+        </div>
       </div>
     </div>
   );

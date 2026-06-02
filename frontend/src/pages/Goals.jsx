@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getGoals, createGoal, updateGoal, deleteGoal } from '../lib/api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -289,9 +290,10 @@ function AddGoalForm({ onAdded, onCancel }) {
 }
 
 export default function Goals() {
+  const [searchParams] = useSearchParams();
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState(searchParams.get('new') === '1');
   const [error, setError] = useState(null);
 
   const load = useCallback(() => {
@@ -305,6 +307,11 @@ export default function Goals() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // "New goal" from the command palette opens the form.
+  useEffect(() => {
+    if (searchParams.get('new') === '1') setAdding(true);
+  }, [searchParams]);
 
   function handleAdded(g) {
     setGoals((prev) => [g, ...prev]);

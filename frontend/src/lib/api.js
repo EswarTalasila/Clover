@@ -27,6 +27,10 @@ export function createTransaction(data) {
   return api.post('/transactions', data).then((r) => r.data);
 }
 
+export function searchTransactions(q, limit = 8) {
+  return api.get('/transactions/search', { params: { q, limit } }).then((r) => r.data);
+}
+
 export function updateTransaction(id, data) {
   return api.patch(`/transactions/${id}`, data).then((r) => r.data);
 }
@@ -73,6 +77,10 @@ export function register(data) {
 
 export function login(data) {
   return api.post('/auth/login', data).then((r) => r.data);
+}
+
+export function demoLogin() {
+  return api.post('/auth/demo').then((r) => r.data);
 }
 
 export function getMe() {

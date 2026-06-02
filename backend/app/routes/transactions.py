@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, or_
 from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.middleware.auth import get_current_user
@@ -58,6 +58,37 @@ async def list_transactions(
             Transaction.date >= month_start,
             Transaction.date < month_end,
         )
+    result = await db.execute(query)
+    return [to_out(tx) for tx in result.scalars().all()]
+
+
+@router.get("/search", response_model=list[TransactionOut])
+async def search_transactions(
+    q: str,
+    limit: int = 8,
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(get_current_user),
+):
+    term = q.strip()
+    if not term:
+        return []
+    limit = max(1, min(limit, 20))
+
+    query = (
+        select(Transaction)
+        .options(selectinload(Transaction.account))
+        .where(
+            Transaction.user_id == user_id,
+            or_(
+                Transaction.description.icontains(term, autoescape=True),
+                Transaction.merchant_name.icontains(term, autoescape=True),
+                Transaction.category.icontains(term, autoescape=True),
+                Transaction.notes.icontains(term, autoescape=True),
+            ),
+        )
+        .order_by(Transaction.date.desc())
+        .limit(limit)
+    )
     result = await db.execute(query)
     return [to_out(tx) for tx in result.scalars().all()]
 

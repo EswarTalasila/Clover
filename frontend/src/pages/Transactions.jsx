@@ -301,7 +301,7 @@ export default function Transactions() {
     setSearchParams(next, { replace: true });
   }
 
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(searchParams.get('new') === '1');
   const [form, setForm] = useState({
     description: '',
     amount: '',
@@ -315,7 +315,14 @@ export default function Transactions() {
   const [sortDir, setSortDir] = useState('desc');
   const [expanded, setExpanded] = useState(null);
   const [toast, setToast] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+
+  // Apply deep-links from the command palette: pre-fill search / open the new form.
+  useEffect(() => {
+    const s = searchParams.get('search');
+    if (s !== null) setSearchQuery(s);
+    if (searchParams.get('new') === '1') setShowForm(true);
+  }, [searchParams]);
 
   async function handleSaveNotes(id, notes) {
     await updateTransactionNotes(id, notes);
